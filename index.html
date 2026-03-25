@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>🔥 Soraki AutoShop 🔥</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  </head>
+  <body>
+    <div id="outside-telegram" class="gate hidden">
+      <div class="gate-card">
+        <h1>Accès réservé au bot Telegram</h1>
+        <p>
+          Cette page fonctionne uniquement via Telegram WebApp. Ouvre le bot
+          <strong>@PatekShop</strong> pour accéder à l'AutoShop.
+        </p>
+        <a class="btn btn-primary" href="https://t.me/PatekShop" target="_blank" rel="noopener noreferrer">Ouvrir @PatekShop</a>
+      </div>
+    </div>
+
+    <main id="app" class="app hidden">
+      <header class="topbar">
+        <button class="icon">✕</button>
+        <div class="brand"><span>🔥</span> Soraki AutoShop <span>🔥</span></div>
+        <div class="actions"><button class="icon">＋</button><button class="icon">⌟</button></div>
+      </header>
+
+      <section class="screen active" data-screen="accueil">
+        <div class="identity">
+          <div class="logo"></div>
+          <div>
+            <p class="hello">Bonjour</p>
+            <p class="diamond">💎</p>
+          </div>
+        </div>
+
+        <article class="card gradient-red">
+          <p class="muted red">Solde disponible</p>
+          <h2 class="money">10,00 €</h2>
+          <p class="muted">Converti au taux du dépôt</p>
+          <div class="grid2">
+            <button class="btn btn-primary" data-nav="boutique">🛒 Boutique</button>
+            <button class="btn btn-secondary" data-nav="depot">💳 Déposer</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="row between center">
+            <h3>▭ Produits disponibles</h3>
+            <p class="count">1681</p>
+          </div>
+          <div class="bar"></div>
+          <div class="tags" id="products-tags"></div>
+        </article>
+      </section>
+
+      <section class="screen" data-screen="depot">
+        <div class="identity">
+          <div class="logo"></div>
+          <div>
+            <h2>Recharger ma balance</h2>
+            <p class="muted">Ton solde est crédité en <strong>EUR stable</strong>.</p>
+          </div>
+        </div>
+        <article class="card">
+          <h3>➜ Choisir une crypto</h3>
+          <p class="muted">Sélectionne la crypto et génère ton adresse de dépôt.</p>
+          <button class="select">₿ Bitcoin <span>⌄</span></button>
+          <button class="btn btn-primary wide">Générer une adresse</button>
+        </article>
+        <article class="card">
+          <h3>⭐ Telegram Stars</h3>
+          <p class="muted">Recharge depuis l'app Telegram.</p>
+          <p class="stars-rate">50 stars = 1 EUR</p>
+          <div class="stars-grid" id="stars-grid"></div>
+        </article>
+      </section>
+
+      <section class="screen" data-screen="boutique">
+        <div class="identity">
+          <div class="logo"></div>
+          <div>
+            <h2>Soraki AutoShop</h2>
+            <p class="muted">Solde: 10.00 EUR</p>
+          </div>
+        </div>
+        <h3 class="center-title">Choisissez une catégorie</h3>
+        <div class="category-grid">
+          <article class="category-card">
+            <div class="cat-icon">▭</div>
+            <h4>Cards</h4>
+            <p class="muted">Cartes bancaires</p>
+          </article>
+          <article class="category-card">
+            <div class="cat-icon">◉</div>
+            <h4>Fiche</h4>
+            <p class="muted">Comptes & identifiants</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="support">
+        <div class="identity">
+          <div class="logo"></div>
+          <div>
+            <h2>Support</h2>
+            <p class="muted">Besoin d'aide ? Contact rapide.</p>
+          </div>
+        </div>
+        <article class="card">
+          <h3>📩 Ouvrir un ticket</h3>
+          <p class="muted">Un agent te répondra dès que possible sur Telegram.</p>
+          <button class="btn btn-primary wide">Contacter le support</button>
+        </article>
+      </section>
+
+      <section class="screen" data-screen="reglages">
+        <div class="identity">
+          <div class="logo"></div>
+          <div><h2>Réglages</h2></div>
+        </div>
+        <article class="card">
+          <h3>🌐 Langue</h3>
+          <p class="muted">Choisissez la langue de l'interface</p>
+          <div class="language-list">
+            <button class="lang active"><span>FR</span> Français <span>✓</span></button>
+            <button class="lang"><span>GB</span> English</button>
+            <button class="lang"><span>RU</span> Русский</button>
+          </div>
+        </article>
+      </section>
+
+      <nav class="bottom-nav">
+        <button class="nav-item active" data-nav="accueil">⌂<span>Accueil</span></button>
+        <button class="nav-item" data-nav="depot">◫<span>Dépôt</span></button>
+        <button class="nav-item" data-nav="boutique">🛒<span>Boutique</span></button>
+        <button class="nav-item" data-nav="support">◌<span>Support</span></button>
+        <button class="nav-item" data-nav="reglages">⚙<span>Réglages</span></button>
+      </nav>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
