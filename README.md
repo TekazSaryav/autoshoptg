@@ -1,124 +1,160 @@
-# Nova Telegram Shop Bot
+# Patek Shop - Bot Telegram E-commerce
 
-Bot Telegram e-commerce production-ready (base solide) avec Node.js + TypeScript + grammY + Prisma/PostgreSQL + Redis + API admin.
+Bot Telegram complet pour une boutique en ligne avec panel d'administration web.
 
-## 1) Analyse UX des références (sans copie)
+## Fonctionnalités
 
-### Structure observée
-- Navigation principale persistante en 5 entrées: accueil, paiement/dépôt, boutique, support, réglages.
-- Écrans "cartes" avec sections hiérarchisées (solde, produits, annonces, tickets).
-- Parcours boutique en 3 niveaux: catégorie → liste produit → détail.
-- Actions directes et rapides via boutons courts.
+### Bot Telegram (Client)
+- `/start` - Message d'accueil et menu principal
+- Navigation par catégories et produits
+- Gestion du panier (ajouter, modifier, supprimer)
+- Checkout avec paiement crypto (BTC/LTC)
+- Historique des commandes
+- Système de tickets support
+- FAQ et aide
 
-### Composants UX utiles à reprendre
-- Menu principal compact avec CTA explicites.
-- Listes d'objets avec statut visuel (stock, prix, statut commande/ticket).
-- Retour arrière clair et omniprésent.
-- Erreurs brèves orientées action.
+### Bot Telegram (Admin)
+- `/admin` - Panel admin
+- `/order_status <ref> <status>` - Changer le statut d'une commande
+- `/order_find <ref>` - Rechercher une commande
+- `/confirm_payment <order_number> [tx_hash]` - Confirmer un paiement
+- `/broadcast <message>` - Envoyer un message à tous les utilisateurs
 
-### Ce qui doit être réinventé (pour rester légal/original)
-- Branding, palette, wording et assets totalement nouveaux.
-- Domaine produit strictement licite (aucun contenu illicite, aucune fraude).
-- Architecture backend orientée conformité: logs admin, RBAC, paiement vérifié, confidentialité.
+### Panel Web Admin
+- Dashboard avec statistiques
+- CRUD Catégories
+- CRUD Produits
+- Gestion des commandes
+- Gestion des utilisateurs et rôles
+- Tickets support
 
-## 2) Spécification fonctionnelle concise
+## Stack Technique
 
-### Côté client
-- `/start` + menu inline principal.
-- Navigation catalogue: catégories, produits, fiche produit, photos, stock.
-- Panier: ajout, incrément/décrément, suppression, total.
-- Checkout: création commande + paiement manuel légal (jamais marqué payé sans preuve).
-- Historique commandes + statuts (`PENDING`, `PAID`, `PREPARING`, `SHIPPED`, `COMPLETED`, `CANCELED`).
-- Support: création ticket + listing tickets.
-- FAQ/Aide.
+- **Bot**: Python + python-telegram-bot
+- **Backend API**: FastAPI
+- **Frontend Admin**: React + TailwindCSS
+- **Base de données**: MongoDB
 
-### Côté admin/staff
-- Contrôle d'accès via whitelist Telegram IDs et rôles DB (ADMIN/STAFF).
-- Commandes bot: voir commandes, recherche commande, changement statut, broadcast (admin only).
-- API interne sécurisée (`x-api-key`) pour CRUD catégories/produits, stock, users, commandes.
-- Journalisation des actions sensibles dans `admin_logs`.
+## Installation
 
-### Sécurité
-- Validation d'inputs via Zod.
-- Rate limiting Redis par user/minute.
-- Sanitization simple sur texte utilisateur.
-- Secrets exclusivement via variables d'environnement.
-- Logs structurés (Pino) avec redaction de données sensibles.
-
-## 3) Arborescence
-
-```txt
-.
-├── src
-│   ├── api
-│   │   ├── middleware/auth.ts
-│   │   ├── routes/admin.ts
-│   │   ├── routes/health.ts
-│   │   └── app.ts
-│   ├── bot
-│   │   ├── context.ts
-│   │   ├── handlers/admin.ts
-│   │   ├── handlers/public.ts
-│   │   ├── keyboards/main-menu.ts
-│   │   └── middleware/{rate-limit.ts,user.ts}
-│   ├── config/env.ts
-│   ├── lib/{logger.ts,prisma.ts,redis.ts}
-│   ├── services/*.ts
-│   ├── validators/common.ts
-│   └── index.ts
-├── prisma
-│   ├── schema.prisma
-│   ├── migrations/20260327000000_init/migration.sql
-│   └── seed.ts
-├── Dockerfile
-├── docker-compose.yml
-├── .env.example
-├── package.json
-└── tsconfig.json
-```
-
-## 4) Démarrage local
-
-1. Copier l'environnement:
-   ```bash
-   cp .env.example .env
-   ```
-2. Lancer les services:
-   ```bash
-   docker compose up -d postgres redis
-   ```
-3. Installer dépendances:
-   ```bash
-   npm install
-   ```
-4. Générer Prisma Client + appliquer migration + seed:
-   ```bash
-   npm run prisma:generate
-   npx prisma migrate deploy
-   npm run prisma:seed
-   ```
-5. Lancer le bot + API:
-   ```bash
-   npm run dev
-   ```
-
-## 5) Déploiement Docker complet
+### 1. Configuration
 
 ```bash
-docker compose up --build -d
+# Copier le fichier de configuration
+cp backend/.env.example backend/.env
+
+# Éditer les variables
+nano backend/.env
 ```
 
-## 6) Exemples de commandes Telegram à tester
+### 2. Installation des dépendances
 
-- `/start`
-- `/ticket Livraison | Je souhaite un suivi de ma commande`
-- `/admin_orders` (staff/admin)
-- `/order_find ORD-12345678` (staff/admin)
-- `/order_status <orderId> PAID` (staff/admin)
-- `/broadcast Maintenance planifiée demain 22h.` (admin)
+```bash
+# Backend
+cd backend
+pip install -r requirements.txt
 
-## 7) Notes paiement
+# Frontend
+cd frontend
+yarn install
+```
 
-- Implémentation de base: `PaymentMethod.MANUAL`.
-- Le flux est prêt pour extension Stripe/PSP via la table `payments` et les services `order/payment`.
-- Règle de conformité: ne jamais basculer en `CONFIRMED/PAID` sans preuve de confirmation réelle.
+### 3. Lancement
+
+```bash
+# Démarrer l'API
+cd backend && python server.py
+
+# Démarrer le bot (dans un autre terminal)
+cd backend && python bot.py
+
+# Démarrer le frontend
+cd frontend && yarn start
+```
+
+## Structure du Projet
+
+```
+/app
+├── backend/
+│   ├── .env              # Configuration
+│   ├── .env.example      # Template de configuration
+│   ├── requirements.txt  # Dépendances Python
+│   ├── server.py         # API FastAPI
+│   ├── bot.py            # Bot Telegram
+│   ├── models.py         # Modèles Pydantic
+│   └── database.py       # Services MongoDB
+├── frontend/
+│   ├── package.json
+│   ├── src/
+│   │   ├── App.js        # Application React
+│   │   └── index.css     # Styles
+│   └── public/
+└── README.md
+```
+
+## Configuration
+
+### Variables d'environnement
+
+| Variable | Description |
+|----------|-------------|
+| `MONGO_URL` | URL de connexion MongoDB |
+| `DB_NAME` | Nom de la base de données |
+| `TELEGRAM_BOT_TOKEN` | Token du bot (via @BotFather) |
+| `ADMIN_TELEGRAM_IDS` | IDs Telegram des admins (séparés par virgule) |
+| `STAFF_TELEGRAM_IDS` | IDs Telegram du staff |
+| `BTC_ADDRESS` | Adresse Bitcoin pour paiements |
+| `LTC_ADDRESS` | Adresse Litecoin pour paiements |
+| `INTERNAL_API_KEY` | Clé API pour le panel admin |
+| `RATE_LIMIT_PER_MINUTE` | Limite de requêtes par minute |
+
+## Base de données
+
+### Collections MongoDB
+
+- `users` - Utilisateurs
+- `categories` - Catégories de produits
+- `products` - Produits
+- `carts` - Paniers
+- `orders` - Commandes
+- `payments` - Paiements
+- `support_tickets` - Tickets support
+- `admin_logs` - Logs d'actions admin
+- `settings` - Paramètres
+
+## Commandes de test
+
+### Bot Telegram
+1. Ouvrir le bot dans Telegram
+2. `/start` - Affiche le menu
+3. Parcourir Boutique > Catégorie > Produit
+4. Ajouter au panier
+5. Panier > Passer commande
+6. `/ticket Sujet | Message` - Créer un ticket support
+
+### Admin
+1. `/admin` - Affiche le menu admin
+2. `/order_status PS-XXXXXXXX paid` - Marquer comme payé
+3. `/confirm_payment PS-XXXXXXXX tx_hash` - Confirmer paiement
+
+## Sécurité
+
+- Authentification admin via whitelist Telegram ID
+- Rate limiting sur le bot
+- Validation stricte des entrées (Pydantic)
+- Clé API pour les endpoints admin
+- Logs des actions administratives
+
+## Paiements
+
+Le système utilise un mode de paiement manuel crypto :
+1. Le client crée une commande
+2. Les adresses crypto s'affichent (BTC/LTC)
+3. Le client effectue le paiement
+4. Le client envoie une preuve via le support
+5. Un admin confirme le paiement avec `/confirm_payment`
+
+## License
+
+MIT

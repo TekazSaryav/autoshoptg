@@ -1,0 +1,476 @@
+{
+  "timestamp": "2026-03-27T21:48:18.875205",
+  "summary": {
+    "tests_run": 16,
+    "tests_passed": 16,
+    "tests_failed": 0,
+    "success_rate": 100.0
+  },
+  "test_results": [
+    {
+      "test_name": "Health Check",
+      "endpoint": "api/health",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "status": "ok",
+        "timestamp": "2026-03-27T21:48:16.877952+00:00"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Admin Stats",
+      "endpoint": "api/admin/stats",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "users": 0,
+        "products": 6,
+        "orders": {
+          "pending": 0,
+          "paid": 0,
+          "preparing": 0,
+          "shipped": 0,
+          "completed": 0,
+          "canceled": 0,
+          "total": 0
+        },
+        "tickets": {
+          "open": 0,
+          "in_progress": 0,
+          "resolved": 0,
+          "total": 0
+        }
+      },
+      "error": null
+    },
+    {
+      "test_name": "List Categories",
+      "endpoint": "api/admin/categories",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": [
+        {
+          "id": "qvyDvv3_Qm7lC0-G",
+          "slug": "electronics",
+          "name": "\u00c9lectronique",
+          "description": "Appareils \u00e9lectroniques",
+          "icon": "\ud83d\udcf1",
+          "is_active": true,
+          "position": 1,
+          "created_at": "2026-03-27T21:46:18.407000",
+          "updated_at": "2026-03-27T21:46:18.407000"
+        },
+        {
+          "id": "7j5w1Hx2GeJCD6pM",
+          "slug": "fashion",
+          "name": "Mode",
+          "description": "V\u00eatements et accessoires",
+          "icon": "\ud83d\udc55",
+          "is_active": true,
+          "position": 2,
+          "created_at": "2026-03-27T21:46:18.408000",
+          "updated_at": "2026-03-27T21:46:18.408000"
+        },
+        {
+          "id": "epNkIMOJco413EYE",
+          "slug": "digital",
+          "name": "Digital",
+          "description": "Produits num\u00e9riques",
+          "icon": "\ud83d\udcbe",
+          "is_active": true,
+          "position": 3,
+          "created_at": "2026-03-27T21:46:18.408000",
+          "updated_at": "2026-03-27T21:46:18.408000"
+        }
+      ],
+      "error": null
+    },
+    {
+      "test_name": "Create Category",
+      "endpoint": "api/admin/categories",
+      "method": "POST",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "id": "ORBjhsCgf8no6raY",
+        "slug": "test-category",
+        "name": "Test Category",
+        "description": "Test category for API testing",
+        "icon": "\ud83e\uddea",
+        "is_active": true,
+        "position": 999,
+        "created_at": "2026-03-27T21:48:17.270452+00:00",
+        "updated_at": "2026-03-27T21:48:17.270455+00:00"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Get Category",
+      "endpoint": "api/admin/categories/ORBjhsCgf8no6raY",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "id": "ORBjhsCgf8no6raY",
+        "slug": "test-category",
+        "name": "Test Category",
+        "description": "Test category for API testing",
+        "icon": "\ud83e\uddea",
+        "is_active": true,
+        "position": 999,
+        "created_at": "2026-03-27T21:48:17.270000",
+        "updated_at": "2026-03-27T21:48:17.270000"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Update Category",
+      "endpoint": "api/admin/categories/ORBjhsCgf8no6raY",
+      "method": "PATCH",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "id": "ORBjhsCgf8no6raY",
+        "slug": "test-category",
+        "name": "Updated Test Category",
+        "description": "Test category for API testing",
+        "icon": "\ud83e\uddea",
+        "is_active": true,
+        "position": 999,
+        "created_at": "2026-03-27T21:48:17.270000",
+        "updated_at": "2026-03-27T21:48:17.530000"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Delete Category",
+      "endpoint": "api/admin/categories/ORBjhsCgf8no6raY",
+      "method": "DELETE",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true
+      },
+      "error": null
+    },
+    {
+      "test_name": "List Categories for Products",
+      "endpoint": "api/admin/categories",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": [
+        {
+          "id": "qvyDvv3_Qm7lC0-G",
+          "slug": "electronics",
+          "name": "\u00c9lectronique",
+          "description": "Appareils \u00e9lectroniques",
+          "icon": "\ud83d\udcf1",
+          "is_active": true,
+          "position": 1,
+          "created_at": "2026-03-27T21:46:18.407000",
+          "updated_at": "2026-03-27T21:46:18.407000"
+        },
+        {
+          "id": "7j5w1Hx2GeJCD6pM",
+          "slug": "fashion",
+          "name": "Mode",
+          "description": "V\u00eatements et accessoires",
+          "icon": "\ud83d\udc55",
+          "is_active": true,
+          "position": 2,
+          "created_at": "2026-03-27T21:46:18.408000",
+          "updated_at": "2026-03-27T21:46:18.408000"
+        },
+        {
+          "id": "epNkIMOJco413EYE",
+          "slug": "digital",
+          "name": "Digital",
+          "description": "Produits num\u00e9riques",
+          "icon": "\ud83d\udcbe",
+          "is_active": true,
+          "position": 3,
+          "created_at": "2026-03-27T21:46:18.408000",
+          "updated_at": "2026-03-27T21:46:18.408000"
+        }
+      ],
+      "error": null
+    },
+    {
+      "test_name": "List Products",
+      "endpoint": "api/admin/products",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": [
+        {
+          "id": "z3ghMpLd2hXdK1jX",
+          "category_id": "qvyDvv3_Qm7lC0-G",
+          "sku": "ELEC-002",
+          "title": "\u00c9couteurs Sans Fil",
+          "description": "\u00c9couteurs Bluetooth avec r\u00e9duction de bruit active.",
+          "price_cents": 14900,
+          "currency": "EUR",
+          "stock": 50,
+          "variants": [],
+          "images": [
+            {
+              "id": "t5G8OIhbbPsmWVCy",
+              "url": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400",
+              "position": 0,
+              "alt": "\u00c9couteurs Sans Fil"
+            }
+          ],
+          "is_active": true,
+          "created_at": "2026-03-27T21:46:18.409000",
+          "updated_at": "2026-03-27T21:46:18.409000"
+        },
+        {
+          "id": "x4NPJV-DiGLmfDoF",
+          "category_id": "7j5w1Hx2GeJCD6pM",
+          "sku": "FASH-001",
+          "title": "Montre Classique",
+          "description": "Montre \u00e9l\u00e9gante en acier inoxydable, mouvement automatique.",
+          "price_cents": 29900,
+          "currency": "EUR",
+          "stock": 20,
+          "variants": [],
+          "images": [
+            {
+              "id": "Jtl__XSn7-fHKK8X",
+              "url": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
+              "position": 0,
+              "alt": "Montre Classique"
+            }
+          ],
+          "is_active": true,
+          "created_at": "2026-03-27T21:46:18.409000",
+          "updated_at": "2026-03-27T21:46:18.409000"
+        },
+        {
+          "id": "7E0LhAbTvB-_7wWD",
+          "category_id": "7j5w1Hx2GeJCD6pM",
+          "sku": "FASH-002",
+          "title": "Sac en Cuir",
+          "description": "Sac \u00e0 main en cuir v\u00e9ritable, design premium.",
+          "price_cents": 19900,
+          "currency": "EUR",
+          "stock": 10,
+          "variants": [],
+          "images": [
+            {
+              "id": "fFCoKS-ox1uDuLak",
+              "url": "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400",
+              "position": 0,
+              "alt": "Sac en Cuir"
+            }
+          ],
+          "is_active": true,
+          "created_at": "2026-03-27T21:46:18.409000",
+          "updated_at": "2026-03-27T21:46:18.409000"
+        },
+        {
+          "id": "tvChCn6VlJtSQB0J",
+          "category_id": "epNkIMOJco413EYE",
+          "sku": "DIGI-001",
+          "title": "Licence Logiciel Pro",
+          "description": "Licence annuelle pour logiciel professionnel.",
+          "price_cents": 9900,
+          "currency": "EUR",
+          "stock": 100,
+          "variants": [],
+          "images": [],
+          "is_active": true,
+          "created_at": "2026-03-27T21:46:18.409000",
+          "updated_at": "2026-03-27T21:46:18.409000"
+        },
+        {
+          "id": "ac7Hp4PaMvTIwv_k",
+          "category_id": "epNkIMOJco413EYE",
+          "sku": "DIGI-002",
+          "title": "E-Book Pack",
+          "description": "Collection de 50 e-books business et d\u00e9veloppement personnel.",
+          "price_cents": 4900,
+          "currency": "EUR",
+          "stock": 999,
+          "variants": [],
+          "images": [],
+          "is_active": true,
+          "created_at": "2026-03-27T21:46:18.409000",
+          "updated_at": "2026-03-27T21:46:18.409000"
+        },
+        {
+          "id": "RdBBcd0GKsLcL_5W",
+          "category_id": "qvyDvv3_Qm7lC0-G",
+          "sku": "ELEC-001",
+          "title": "Smartphone Pro Max",
+          "description": "Dernier mod\u00e8le avec \u00e9cran AMOLED 6.7 pouces, 256GB stockage.",
+          "price_cents": 89900,
+          "currency": "EUR",
+          "stock": 15,
+          "variants": [],
+          "images": [
+            {
+              "id": "Hr2d_8GrF5ScgmLA",
+              "url": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400",
+              "position": 0,
+              "alt": "Smartphone Pro Max"
+            }
+          ],
+          "is_active": true,
+          "created_at": "2026-03-27T21:46:18.408000",
+          "updated_at": "2026-03-27T21:46:18.408000"
+        }
+      ],
+      "error": null
+    },
+    {
+      "test_name": "Create Product",
+      "endpoint": "api/admin/products",
+      "method": "POST",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "id": "bde_dAZd4y7OdDiJ",
+        "category_id": "qvyDvv3_Qm7lC0-G",
+        "sku": "TEST-001",
+        "title": "Test Product",
+        "description": "Test product for API testing",
+        "price_cents": 1999,
+        "currency": "EUR",
+        "stock": 10,
+        "variants": [],
+        "images": [
+          {
+            "id": "4IuQ9-wRmMWcIwJY",
+            "url": "https://via.placeholder.com/400",
+            "position": 0,
+            "alt": "Test Product"
+          }
+        ],
+        "is_active": true,
+        "created_at": "2026-03-27T21:48:18.031915+00:00",
+        "updated_at": "2026-03-27T21:48:18.031919+00:00"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Get Product",
+      "endpoint": "api/admin/products/bde_dAZd4y7OdDiJ",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "id": "bde_dAZd4y7OdDiJ",
+        "category_id": "qvyDvv3_Qm7lC0-G",
+        "sku": "TEST-001",
+        "title": "Test Product",
+        "description": "Test product for API testing",
+        "price_cents": 1999,
+        "currency": "EUR",
+        "stock": 10,
+        "variants": [],
+        "images": [
+          {
+            "id": "4IuQ9-wRmMWcIwJY",
+            "url": "https://via.placeholder.com/400",
+            "position": 0,
+            "alt": "Test Product"
+          }
+        ],
+        "is_active": true,
+        "created_at": "2026-03-27T21:48:18.031000",
+        "updated_at": "2026-03-27T21:48:18.031000"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Update Product",
+      "endpoint": "api/admin/products/bde_dAZd4y7OdDiJ",
+      "method": "PATCH",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "id": "bde_dAZd4y7OdDiJ",
+        "category_id": "qvyDvv3_Qm7lC0-G",
+        "sku": "TEST-001",
+        "title": "Updated Test Product",
+        "description": "Test product for API testing",
+        "price_cents": 2999,
+        "currency": "EUR",
+        "stock": 10,
+        "variants": [],
+        "images": [
+          {
+            "id": "4IuQ9-wRmMWcIwJY",
+            "url": "https://via.placeholder.com/400",
+            "position": 0,
+            "alt": "Test Product"
+          }
+        ],
+        "is_active": true,
+        "created_at": "2026-03-27T21:48:18.031000",
+        "updated_at": "2026-03-27T21:48:18.263000"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Delete Product",
+      "endpoint": "api/admin/products/bde_dAZd4y7OdDiJ",
+      "method": "DELETE",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "success": true
+      },
+      "error": null
+    },
+    {
+      "test_name": "List Orders",
+      "endpoint": "api/admin/orders",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": [],
+      "error": null
+    },
+    {
+      "test_name": "List Users",
+      "endpoint": "api/admin/users",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": [],
+      "error": null
+    },
+    {
+      "test_name": "List Tickets",
+      "endpoint": "api/admin/tickets",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": [],
+      "error": null
+    }
+  ]
+}
