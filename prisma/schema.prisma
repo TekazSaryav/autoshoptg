@@ -1,0 +1,241 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CLIENT
+  STAFF
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PREPARING
+  SHIPPED
+  COMPLETED
+  CANCELED
+}
+
+enum PaymentStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  CANCELED
+}
+
+enum PaymentMethod {
+  MANUAL
+  STRIPE
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+model User {
+  id               String          @id @default(cuid())
+  telegramId       BigInt          @unique
+  username         String?         @db.VarChar(64)
+  firstName        String          @db.VarChar(100)
+  lastName         String?         @db.VarChar(100)
+  role             UserRole        @default(CLIENT)
+  locale           String          @default("fr") @db.VarChar(8)
+  isActive         Boolean         @default(true)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  addresses        Address[]
+  cart             Cart?
+  orders           Order[]
+  supportTickets   SupportTicket[]
+  adminLogs        AdminLog[]      @relation("AdminActor")
+  assignedTickets  SupportTicket[] @relation("TicketAssignee")
+}
+
+model Address {
+  id          String   @id @default(cuid())
+  userId      String
+  label       String   @db.VarChar(100)
+  line1       String   @db.VarChar(200)
+  line2       String?  @db.VarChar(200)
+  city        String   @db.VarChar(100)
+  postalCode  String   @db.VarChar(20)
+  countryCode String   @db.Char(2)
+  phone       String?  @db.VarChar(30)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders      Order[]
+
+  @@index([userId])
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  slug        String    @unique @db.VarChar(100)
+  name        String    @db.VarChar(100)
+  description String?   @db.VarChar(500)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+}
+
+model Product {
+  id             String         @id @default(cuid())
+  categoryId     String
+  sku            String         @unique @db.VarChar(60)
+  title          String         @db.VarChar(140)
+  description    String         @db.VarChar(2000)
+  priceCents     Int
+  currency       String         @default("EUR") @db.Char(3)
+  stock          Int            @default(0)
+  variantsJson   Json?
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  category       Category       @relation(fields: [categoryId], references: [id])
+  images         ProductImage[]
+  cartItems      CartItem[]
+  orderItems     OrderItem[]
+
+  @@index([categoryId])
+  @@index([isActive])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  url       String   @db.VarChar(500)
+  position  Int      @default(0)
+  alt       String?  @db.VarChar(120)
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+}
+
+model CartItem {
+  id           String   @id @default(cuid())
+  cartId       String
+  productId    String
+  quantity     Int      @default(1)
+  unitPriceCts Int
+  variantKey   String?  @db.VarChar(100)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  cart         Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product      Product  @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId, variantKey])
+  @@index([cartId])
+}
+
+model Order {
+  id                String       @id @default(cuid())
+  orderNumber       String       @unique @db.VarChar(24)
+  userId            String
+  addressId         String?
+  status            OrderStatus  @default(PENDING)
+  currency          String       @default("EUR") @db.Char(3)
+  subtotalCents     Int
+  shippingCents     Int          @default(0)
+  totalCents        Int
+  notes             String?      @db.VarChar(500)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  user              User         @relation(fields: [userId], references: [id])
+  address           Address?     @relation(fields: [addressId], references: [id])
+  items             OrderItem[]
+  payments          Payment[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model OrderItem {
+  id           String   @id @default(cuid())
+  orderId      String
+  productId    String
+  title        String   @db.VarChar(140)
+  quantity     Int
+  unitPriceCts Int
+  totalPriceCts Int
+  variantKey   String?  @db.VarChar(100)
+  createdAt    DateTime @default(now())
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product      Product  @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+}
+
+model Payment {
+  id                   String        @id @default(cuid())
+  orderId              String
+  method               PaymentMethod @default(MANUAL)
+  status               PaymentStatus @default(PENDING)
+  amountCents          Int
+  currency             String        @default("EUR") @db.Char(3)
+  providerRef          String?       @db.VarChar(120)
+  providerPayloadHash  String?       @db.VarChar(120)
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  confirmedAt          DateTime?
+  order                Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([status])
+}
+
+model SupportTicket {
+  id          String       @id @default(cuid())
+  userId      String
+  assigneeId  String?
+  subject     String       @db.VarChar(140)
+  message     String       @db.VarChar(3000)
+  status      TicketStatus @default(OPEN)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  user        User         @relation(fields: [userId], references: [id])
+  assignee    User?        @relation("TicketAssignee", fields: [assigneeId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+}
+
+model AdminLog {
+  id          String   @id @default(cuid())
+  actorId     String
+  action      String   @db.VarChar(120)
+  targetType  String   @db.VarChar(60)
+  targetId    String?  @db.VarChar(80)
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  actor       User     @relation("AdminActor", fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([action])
+}
+
+model Setting {
+  key       String   @id @db.VarChar(100)
+  value     Json
+  updatedAt DateTime @updatedAt
+}
