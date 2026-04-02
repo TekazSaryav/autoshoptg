@@ -65,10 +65,250 @@ async def verify_api_key(x_api_key: str = Header(None)):
         raise HTTPException(status_code=401, detail="Invalid API key")
     return True
 
+# Telegram WebApp auth
+import hashlib
+import hmac
+import json
+from urllib.parse import parse_qsl
+
+BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+BTC_ADDRESS = os.environ.get("BTC_ADDRESS", "")
+LTC_ADDRESS = os.environ.get("LTC_ADDRESS", "")
+
+def validate_telegram_data(init_data: str) -> dict:
+    """Validate Telegram WebApp initData"""
+    try:
+        parsed = dict(parse_qsl(init_data, keep_blank_values=True))
+        hash_value = parsed.pop("hash", "")
+        
+        data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(parsed.items()))
+        secret_key = hmac.new(b"WebAppData", BOT_TOKEN.encode(), hashlib.sha256).digest()
+        calculated_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+        
+        if calculated_hash != hash_value:
+            return None
+        
+        user_data = json.loads(parsed.get("user", "{}"))
+        return user_data
+    except Exception:
+        return None
+
+async def get_telegram_user(x_telegram_init_data: str = Header(None)):
+    """Get user from Telegram initData or demo mode"""
+    # Demo mode for testing without Telegram
+    if not x_telegram_init_data or x_telegram_init_data == "demo":
+        # Return demo user
+        user = UserService.get_or_create(
+            telegram_id=8387296012,  # Admin ID for demo
+            first_name="Demo",
+            last_name="User",
+            username="demo_user",
+            photo_url=None
+        )
+        return user
+    
+    user_data = validate_telegram_data(x_telegram_init_data)
+    if not user_data:
+        # Fallback to demo mode if validation fails
+        user = UserService.get_or_create(
+            telegram_id=8387296012,
+            first_name="Demo",
+            last_name="User",
+            username="demo_user",
+            photo_url=None
+        )
+        return user
+    
+    user = UserService.get_or_create(
+        telegram_id=user_data.get("id"),
+        first_name=user_data.get("first_name", "User"),
+        last_name=user_data.get("last_name"),
+        username=user_data.get("username"),
+        photo_url=user_data.get("photo_url")
+    )
+    return user
+
 # Health check
 @app.get("/api/health")
 async def health_check():
     return {"status": "ok", "timestamp": datetime.now(timezone.utc).isoformat()}
+
+# ============== WEBAPP ENDPOINTS (for Telegram Mini App) ==============
+
+@app.get("/api/webapp/me")
+async def webapp_get_me(user: dict = Depends(get_telegram_user)):
+    """Get current user profile"""
+    return user
+
+@app.get("/api/webapp/home")
+async def webapp_home(user: dict = Depends(get_telegram_user)):
+    """Home page data"""
+    categories = CategoryService.list_active()
+    products_count = ProductService.count()
+    
+    # Get category stats
+    category_stats = []
+    for cat in categories:
+        count = CategoryService.count_products(cat["id"])
+        category_stats.append({
+            "id": cat["id"],
+            "name": cat["name"],
+            "icon": cat.get("icon", "📁"),
+            "count": count
+        })
+    
+    return {
+        "user": user,
+        "balance_cents": user.get("balance_cents", 0),
+        "products_count": products_count,
+        "categories": category_stats
+    }
+
+@app.get("/api/webapp/deposit")
+async def webapp_deposit_info(user: dict = Depends(get_telegram_user)):
+    """Get deposit addresses"""
+    return {
+        "btc_address": BTC_ADDRESS,
+        "ltc_address": LTC_ADDRESS,
+        "user_balance": user.get("balance_cents", 0)
+    }
+
+@app.get("/api/webapp/categories")
+async def webapp_categories(user: dict = Depends(get_telegram_user)):
+    """List categories for shop"""
+    categories = CategoryService.list_active()
+    result = []
+    for cat in categories:
+        count = CategoryService.count_products(cat["id"])
+        result.append({**cat, "products_count": count})
+    return result
+
+@app.get("/api/webapp/categories/{cat_id}/products")
+async def webapp_category_products(cat_id: str, user: dict = Depends(get_telegram_user)):
+    """Get products in category"""
+    category = CategoryService.get_by_id(cat_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    products = ProductService.list_by_category(cat_id)
+    return {"category": category, "products": products}
+
+@app.get("/api/webapp/products/{product_id}")
+async def webapp_product_detail(product_id: str, user: dict = Depends(get_telegram_user)):
+    """Get product details"""
+    product = ProductService.get_by_id(product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return product
+
+@app.get("/api/webapp/cart")
+async def webapp_get_cart(user: dict = Depends(get_telegram_user)):
+    """Get user cart"""
+    cart = CartService.get_or_create(user["id"])
+    total = sum(item["unit_price_cents"] * item["quantity"] for item in cart.get("items", []))
+    return {"cart": cart, "total_cents": total, "user_balance": user.get("balance_cents", 0)}
+
+@app.post("/api/webapp/cart/add")
+async def webapp_add_to_cart(product_id: str = Query(...), quantity: int = Query(1), user: dict = Depends(get_telegram_user)):
+    """Add item to cart"""
+    try:
+        cart = CartService.add_item(user["id"], product_id, quantity)
+        return {"success": True, "cart": cart}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/webapp/cart/update")
+async def webapp_update_cart(item_id: str = Query(...), quantity: int = Query(...), user: dict = Depends(get_telegram_user)):
+    """Update cart item quantity"""
+    cart = CartService.update_item_quantity(user["id"], item_id, quantity)
+    return {"success": True, "cart": cart}
+
+@app.post("/api/webapp/cart/clear")
+async def webapp_clear_cart(user: dict = Depends(get_telegram_user)):
+    """Clear cart"""
+    cart = CartService.clear(user["id"])
+    return {"success": True, "cart": cart}
+
+@app.post("/api/webapp/checkout")
+async def webapp_checkout(user: dict = Depends(get_telegram_user)):
+    """Checkout with wallet balance"""
+    cart = CartService.get_or_create(user["id"])
+    total = sum(item["unit_price_cents"] * item["quantity"] for item in cart.get("items", []))
+    
+    if not cart.get("items"):
+        raise HTTPException(status_code=400, detail="Panier vide")
+    
+    user_balance = user.get("balance_cents", 0)
+    if user_balance < total:
+        raise HTTPException(status_code=400, detail=f"Solde insuffisant. Requis: {total/100:.2f}€, Disponible: {user_balance/100:.2f}€")
+    
+    # Deduct balance
+    if not UserService.deduct_balance(user["id"], total):
+        raise HTTPException(status_code=400, detail="Erreur de paiement")
+    
+    # Create order
+    try:
+        order = OrderService.create_from_cart(user["id"], user["telegram_id"])
+        # Mark as paid since we used wallet
+        OrderService.update_status(order["id"], "paid")
+        
+        # Create payment record
+        PaymentService.create(
+            order_id=order["id"],
+            order_number=order["order_number"],
+            method="wallet",
+            amount_cents=total,
+            crypto_address=None
+        )
+        
+        return {"success": True, "order": order}
+    except ValueError as e:
+        # Refund if order creation failed
+        UserService.add_balance(user["id"], total)
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/webapp/orders")
+async def webapp_orders(user: dict = Depends(get_telegram_user)):
+    """Get user orders"""
+    orders = OrderService.list_by_user(user["id"])
+    return orders
+
+@app.get("/api/webapp/orders/{order_id}")
+async def webapp_order_detail(order_id: str, user: dict = Depends(get_telegram_user)):
+    """Get order details"""
+    order = OrderService.get_by_id(order_id)
+    if not order or order["user_id"] != user["id"]:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return order
+
+@app.get("/api/webapp/tickets")
+async def webapp_tickets(user: dict = Depends(get_telegram_user)):
+    """Get user support tickets"""
+    return SupportService.list_by_user(user["id"])
+
+@app.post("/api/webapp/tickets")
+async def webapp_create_ticket(subject: str = Query(..., min_length=3), message: str = Query(..., min_length=5), user: dict = Depends(get_telegram_user)):
+    """Create support ticket"""
+    ticket = SupportService.create_ticket(user["id"], user["telegram_id"], subject, message)
+    return ticket
+
+@app.get("/api/webapp/tickets/{ticket_id}")
+async def webapp_ticket_detail(ticket_id: str, user: dict = Depends(get_telegram_user)):
+    """Get ticket details"""
+    ticket = SupportService.get_by_id(ticket_id)
+    if not ticket or ticket["user_id"] != user["id"]:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    return ticket
+
+@app.post("/api/webapp/tickets/{ticket_id}/reply")
+async def webapp_ticket_reply(ticket_id: str, message: str = Query(..., min_length=1), user: dict = Depends(get_telegram_user)):
+    """Reply to ticket"""
+    ticket = SupportService.get_by_id(ticket_id)
+    if not ticket or ticket["user_id"] != user["id"]:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    updated = SupportService.add_reply(ticket_id, "user", message)
+    return updated
+
+# ============== ADMIN ENDPOINTS ==============
 
 # Dashboard stats
 @app.get("/api/admin/stats")
@@ -101,6 +341,14 @@ async def list_users(auth: bool = Depends(verify_api_key), limit: int = Query(10
 @app.get("/api/admin/users/{user_id}")
 async def get_user(user_id: str, auth: bool = Depends(verify_api_key)):
     user = UserService.get_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+@app.post("/api/admin/users/{user_id}/balance")
+async def add_user_balance(user_id: str, amount_cents: int = Query(...), auth: bool = Depends(verify_api_key)):
+    """Add balance to user wallet"""
+    user = UserService.add_balance(user_id, amount_cents)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user

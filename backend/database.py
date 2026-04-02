@@ -69,12 +69,12 @@ def serialize_docs(docs: list) -> list:
 # User Service
 class UserService:
     @staticmethod
-    def get_or_create(telegram_id: int, first_name: str, last_name: str = None, username: str = None) -> dict:
+    def get_or_create(telegram_id: int, first_name: str, last_name: str = None, username: str = None, photo_url: str = None) -> dict:
         user = users_col.find_one({"telegram_id": telegram_id}, {"_id": 0})
         if user:
             users_col.update_one(
                 {"telegram_id": telegram_id},
-                {"$set": {"first_name": first_name, "last_name": last_name, "username": username, "updated_at": now_utc()}}
+                {"$set": {"first_name": first_name, "last_name": last_name, "username": username, "photo_url": photo_url, "updated_at": now_utc()}}
             )
             return serialize_doc(users_col.find_one({"telegram_id": telegram_id}, {"_id": 0}))
         
@@ -84,14 +84,32 @@ class UserService:
             "username": username,
             "first_name": first_name,
             "last_name": last_name,
+            "photo_url": photo_url,
             "role": "client",
             "locale": "fr",
+            "balance_cents": 0,
             "is_active": True,
             "created_at": now_utc(),
             "updated_at": now_utc()
         }
         users_col.insert_one(new_user)
         return serialize_doc(new_user)
+    
+    @staticmethod
+    def add_balance(user_id: str, amount_cents: int) -> dict:
+        users_col.update_one(
+            {"id": user_id},
+            {"$inc": {"balance_cents": amount_cents}, "$set": {"updated_at": now_utc()}}
+        )
+        return serialize_doc(users_col.find_one({"id": user_id}, {"_id": 0}))
+    
+    @staticmethod
+    def deduct_balance(user_id: str, amount_cents: int) -> bool:
+        result = users_col.update_one(
+            {"id": user_id, "balance_cents": {"$gte": amount_cents}},
+            {"$inc": {"balance_cents": -amount_cents}, "$set": {"updated_at": now_utc()}}
+        )
+        return result.modified_count > 0
     
     @staticmethod
     def get_by_id(user_id: str) -> Optional[dict]:

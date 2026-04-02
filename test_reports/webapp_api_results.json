@@ -1,0 +1,176 @@
+{
+  "timestamp": "2026-04-02T13:58:03.404743",
+  "test_type": "webapp_api",
+  "summary": {
+    "tests_run": 6,
+    "tests_passed": 6,
+    "tests_failed": 0,
+    "success_rate": 100.0
+  },
+  "test_results": [
+    {
+      "test_name": "Health Check",
+      "endpoint": "api/health",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "status": "ok",
+        "timestamp": "2026-04-02T13:58:02.705955+00:00"
+      },
+      "error": null
+    },
+    {
+      "test_name": "WebApp Me",
+      "endpoint": "api/webapp/me",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "id": "aLGmlFCSbvy1TyNj",
+        "telegram_id": 8387296012,
+        "username": "demo_user",
+        "first_name": "Demo",
+        "last_name": "User",
+        "photo_url": null,
+        "role": "client",
+        "locale": "fr",
+        "balance_cents": 0,
+        "is_active": true,
+        "created_at": "2026-04-02T13:55:23.174000",
+        "updated_at": "2026-04-02T13:58:02.815000"
+      },
+      "error": null
+    },
+    {
+      "test_name": "WebApp Home",
+      "endpoint": "api/webapp/home",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "user": {
+          "id": "aLGmlFCSbvy1TyNj",
+          "telegram_id": 8387296012,
+          "username": "demo_user",
+          "first_name": "Demo",
+          "last_name": "User",
+          "photo_url": null,
+          "role": "client",
+          "locale": "fr",
+          "balance_cents": 0,
+          "is_active": true,
+          "created_at": "2026-04-02T13:55:23.174000",
+          "updated_at": "2026-04-02T13:58:02.990000"
+        },
+        "balance_cents": 0,
+        "products_count": 6,
+        "categories": [
+          {
+            "id": "qvyDvv3_Qm7lC0-G",
+            "name": "\u00c9lectronique",
+            "icon": "\ud83d\udcf1",
+            "count": 2
+          },
+          {
+            "id": "7j5w1Hx2GeJCD6pM",
+            "name": "Mode",
+            "icon": "\ud83d\udc55",
+            "count": 2
+          },
+          {
+            "id": "epNkIMOJco413EYE",
+            "name": "Digital",
+            "icon": "\ud83d\udcbe",
+            "count": 2
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "test_name": "WebApp Categories",
+      "endpoint": "api/webapp/categories",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": [
+        {
+          "id": "qvyDvv3_Qm7lC0-G",
+          "slug": "electronics",
+          "name": "\u00c9lectronique",
+          "description": "Appareils \u00e9lectroniques",
+          "icon": "\ud83d\udcf1",
+          "is_active": true,
+          "position": 1,
+          "created_at": "2026-03-27T21:46:18.407000",
+          "updated_at": "2026-03-27T21:46:18.407000",
+          "products_count": 2
+        },
+        {
+          "id": "7j5w1Hx2GeJCD6pM",
+          "slug": "fashion",
+          "name": "Mode",
+          "description": "V\u00eatements et accessoires",
+          "icon": "\ud83d\udc55",
+          "is_active": true,
+          "position": 2,
+          "created_at": "2026-03-27T21:46:18.408000",
+          "updated_at": "2026-03-27T21:46:18.408000",
+          "products_count": 2
+        },
+        {
+          "id": "epNkIMOJco413EYE",
+          "slug": "digital",
+          "name": "Digital",
+          "description": "Produits num\u00e9riques",
+          "icon": "\ud83d\udcbe",
+          "is_active": true,
+          "position": 3,
+          "created_at": "2026-03-27T21:46:18.408000",
+          "updated_at": "2026-03-27T21:46:18.408000",
+          "products_count": 2
+        }
+      ],
+      "error": null
+    },
+    {
+      "test_name": "WebApp Deposit",
+      "endpoint": "api/webapp/deposit",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "btc_address": "bc1q0rjmgvh54gd44d76e2uk7w6lglaft7zaddzx22",
+        "ltc_address": "ltc1qdf4dy9nsdqd2zn25uf5mdnq2xhnw4ugtcaqg4u",
+        "user_balance": 0
+      },
+      "error": null
+    },
+    {
+      "test_name": "WebApp Cart",
+      "endpoint": "api/webapp/cart",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "cart": {
+          "id": "ypOTpUP_UDQp7Pef",
+          "user_id": "aLGmlFCSbvy1TyNj",
+          "items": [],
+          "created_at": "2026-04-02T13:55:54.834000",
+          "updated_at": "2026-04-02T13:55:54.834000"
+        },
+        "total_cents": 0,
+        "user_balance": 0
+      },
+      "error": null
+    }
+  ]
+}

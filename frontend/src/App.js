@@ -1,993 +1,932 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import {
-  LayoutDashboard, Package, ShoppingCart, Users, MessageSquare, 
-  Settings, LogOut, Plus, Pencil, Trash2, Search, RefreshCw,
-  TrendingUp, DollarSign, Clock, CheckCircle, XCircle, Truck,
-  ChevronRight, Menu, X, Eye, AlertCircle
-} from 'lucide-react';
+import './index.css';
+
+// Telegram WebApp SDK
+const tg = window.Telegram?.WebApp;
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || '';
-const API_KEY = process.env.REACT_APP_API_KEY || '';
 
-const api = axios.create({
-  baseURL: API_URL,
-  headers: { 'X-API-Key': API_KEY, 'Content-Type': 'application/json' }
-});
+// Create API instance with Telegram auth
+const createApi = () => {
+  const initData = tg?.initData || 'demo';  // Fallback to demo mode
+  return axios.create({
+    baseURL: API_URL,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Telegram-Init-Data': initData
+    }
+  });
+};
+
+// Icons
+const HomeIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+    <polyline points="9 22 9 12 15 12 15 22"/>
+  </svg>
+);
+
+const WalletIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+    <line x1="1" y1="10" x2="23" y2="10"/>
+  </svg>
+);
+
+const ShopIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+  </svg>
+);
+
+const SupportIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+  </svg>
+);
+
+const SettingsIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+  </svg>
+);
+
+const ChevronRight = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="9 18 15 12 9 6"/>
+  </svg>
+);
+
+const PlusIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+
+const MinusIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+
+const PackageIcon = () => (
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/>
+    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+  </svg>
+);
+
+const CloseIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+);
+
+const BackIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="15 18 9 12 15 6"/>
+  </svg>
+);
+
+const CopyIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+  </svg>
+);
 
 // Format price
-const formatPrice = (cents, currency = 'EUR') => {
-  return `${(cents / 100).toFixed(2)} ${currency}`;
-};
+const formatPrice = (cents) => `${(cents / 100).toFixed(2)} €`;
 
 // Format date
 const formatDate = (dateStr) => {
-  if (!dateStr) return '-';
+  if (!dateStr) return '';
   const date = new Date(dateStr);
-  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
 };
 
-// Status badge
-const StatusBadge = ({ status, type = 'order' }) => {
-  const orderColors = {
-    pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    paid: 'bg-green-500/20 text-green-400 border-green-500/30',
-    preparing: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    shipped: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-    completed: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-    canceled: 'bg-red-500/20 text-red-400 border-red-500/30'
-  };
-  
-  const ticketColors = {
-    open: 'bg-green-500/20 text-green-400 border-green-500/30',
-    in_progress: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    resolved: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    closed: 'bg-gray-500/20 text-gray-400 border-gray-500/30'
-  };
-  
-  const colors = type === 'ticket' ? ticketColors : orderColors;
-  
-  return (
-    <span className={`px-2 py-1 text-xs font-medium rounded border ${colors[status] || 'bg-gray-500/20 text-gray-400'}`}>
-      {status}
-    </span>
-  );
-};
-
-// Stat Card
-const StatCard = ({ icon: Icon, label, value, subValue, color = 'gold' }) => {
-  const colors = {
-    gold: 'from-amber-500/20 to-amber-600/5 border-amber-500/20',
-    green: 'from-emerald-500/20 to-emerald-600/5 border-emerald-500/20',
-    blue: 'from-blue-500/20 to-blue-600/5 border-blue-500/20',
-    purple: 'from-purple-500/20 to-purple-600/5 border-purple-500/20'
-  };
-  
-  return (
-    <div className={`bg-gradient-to-br ${colors[color]} border rounded-xl p-5 animate-fade-in`}>
-      <div className="flex items-center justify-between mb-3">
-        <Icon className="w-5 h-5 text-patek-muted" />
-        <span className="text-xs text-patek-muted">{subValue}</span>
+// Bottom Navigation
+const BottomNav = ({ currentView, setCurrentView, cartCount }) => (
+  <nav className="bottom-nav">
+    {[
+      { id: 'home', icon: HomeIcon, label: 'Accueil' },
+      { id: 'deposit', icon: WalletIcon, label: 'Dépôt' },
+      { id: 'shop', icon: ShopIcon, label: 'Boutique' },
+      { id: 'support', icon: SupportIcon, label: 'Support' },
+      { id: 'settings', icon: SettingsIcon, label: 'Réglages' },
+    ].map(item => (
+      <div
+        key={item.id}
+        className={`nav-item ${currentView === item.id ? 'active' : ''}`}
+        onClick={() => setCurrentView(item.id)}
+        data-testid={`nav-${item.id}`}
+      >
+        <item.icon />
+        <span>{item.label}</span>
+        {item.id === 'shop' && cartCount > 0 && (
+          <span style={{
+            position: 'absolute',
+            top: '2px',
+            right: '12px',
+            background: 'var(--accent)',
+            color: 'white',
+            fontSize: '10px',
+            padding: '2px 6px',
+            borderRadius: '10px',
+            fontWeight: '600'
+          }}>{cartCount}</span>
+        )}
       </div>
-      <div className="text-2xl font-bold text-patek-text">{value}</div>
-      <div className="text-sm text-patek-muted mt-1">{label}</div>
-    </div>
-  );
-};
+    ))}
+  </nav>
+);
 
-// Modal
-const Modal = ({ isOpen, onClose, title, children }) => {
-  if (!isOpen) return null;
-  
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-patek-card border border-patek-border rounded-xl w-full max-w-lg max-h-[90vh] overflow-auto animate-fade-in" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-4 border-b border-patek-border">
-          <h3 className="text-lg font-semibold text-patek-text">{title}</h3>
-          <button onClick={onClose} className="p-1 hover:bg-patek-border rounded-lg transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <div className="p-4">{children}</div>
+// Home Page
+const HomePage = ({ user, categories, productsCount, onCategoryClick, setCurrentView }) => (
+  <div className="page-container animate-fade-in">
+    {/* Header */}
+    <div className="header">
+      <div className="header-avatar">
+        {user?.photo_url ? (
+          <img src={user.photo_url} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+        ) : (
+          <span>{user?.first_name?.[0] || '👤'}</span>
+        )}
       </div>
-    </div>
-  );
-};
-
-// Dashboard Component
-const Dashboard = ({ stats }) => {
-  return (
-    <div className="space-y-6" data-testid="dashboard-view">
       <div>
-        <h2 className="text-2xl font-display font-bold text-patek-text mb-1">Tableau de bord</h2>
-        <p className="text-patek-muted">Vue d'ensemble de votre boutique</p>
+        <div style={{ fontWeight: '600' }}>Bonjour</div>
+        <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{user?.first_name || 'Utilisateur'}</div>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Users} label="Utilisateurs" value={stats?.users || 0} subValue="Total" color="blue" />
-        <StatCard icon={Package} label="Produits" value={stats?.products || 0} subValue="Actifs" color="purple" />
-        <StatCard icon={ShoppingCart} label="Commandes" value={stats?.orders?.total || 0} subValue="Total" color="gold" />
-        <StatCard icon={MessageSquare} label="Tickets" value={stats?.tickets?.open || 0} subValue="Ouverts" color="green" />
+    </div>
+
+    {/* Balance Card */}
+    <div className="balance-card" data-testid="balance-card">
+      <div className="balance-label">Solde disponible</div>
+      <div className="balance-value">{formatPrice(user?.balance_cents || 0)}</div>
+      <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+        <button className="btn-primary" onClick={() => setCurrentView('shop')} data-testid="shop-btn">
+          🛒 Boutique
+        </button>
+        <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setCurrentView('deposit')} data-testid="deposit-btn">
+          💳 Déposer
+        </button>
       </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-patek-card border border-patek-border rounded-xl p-5">
-          <h3 className="text-lg font-semibold mb-4">Commandes par statut</h3>
-          <div className="space-y-3">
-            {['pending', 'paid', 'preparing', 'shipped', 'completed', 'canceled'].map(status => (
-              <div key={status} className="flex items-center justify-between">
-                <StatusBadge status={status} />
-                <span className="text-patek-text font-medium">{stats?.orders?.[status] || 0}</span>
-              </div>
-            ))}
+    </div>
+
+    {/* Products Available */}
+    <div style={{ padding: '0 16px', marginBottom: '16px' }}>
+      <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} onClick={() => setCurrentView('shop')}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '24px' }}>📦</span>
+          <span style={{ fontWeight: '500' }}>Produits disponibles</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ color: 'var(--accent)', fontWeight: '700', fontSize: '20px' }}>{productsCount}</span>
+          <ChevronRight />
+        </div>
+      </div>
+    </div>
+
+    {/* Categories Preview */}
+    {categories && categories.length > 0 && (
+      <div style={{ padding: '0 16px' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Catégories</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+          {categories.slice(0, 4).map(cat => (
+            <div key={cat.id} className="category-card" onClick={() => onCategoryClick(cat.id)} data-testid={`category-${cat.id}`}>
+              <div className="category-icon">{cat.icon || '📁'}</div>
+              <div className="category-name">{cat.name}</div>
+              <div className="category-count">{cat.count || 0} produits</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+);
+
+// Deposit Page
+const DepositPage = ({ depositInfo, onCopy }) => (
+  <div className="page-container animate-fade-in">
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>Recharger ma balance</h2>
+      <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
+        Ton solde est crédité en EUR stable
+      </p>
+
+      {/* Bitcoin */}
+      <div className="card" style={{ marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#f7931a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: '20px' }}>₿</span>
           </div>
+          <div>
+            <div style={{ fontWeight: '600' }}>Bitcoin</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>BTC</div>
+          </div>
+        </div>
+        <div className="crypto-address" onClick={() => onCopy(depositInfo?.btc_address)} style={{ cursor: 'pointer' }}>
+          {depositInfo?.btc_address || 'Chargement...'}
+        </div>
+        <button className="btn-primary" style={{ marginTop: '12px' }} onClick={() => onCopy(depositInfo?.btc_address)} data-testid="copy-btc">
+          Copier l'adresse
+        </button>
+      </div>
+
+      {/* Litecoin */}
+      <div className="card" style={{ marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#bfbbbb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: '20px' }}>Ł</span>
+          </div>
+          <div>
+            <div style={{ fontWeight: '600' }}>Litecoin</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>LTC</div>
+          </div>
+        </div>
+        <div className="crypto-address" onClick={() => onCopy(depositInfo?.ltc_address)} style={{ cursor: 'pointer' }}>
+          {depositInfo?.ltc_address || 'Chargement...'}
+        </div>
+        <button className="btn-primary" style={{ marginTop: '12px' }} onClick={() => onCopy(depositInfo?.ltc_address)} data-testid="copy-ltc">
+          Copier l'adresse
+        </button>
+      </div>
+
+      <div style={{ background: 'rgba(220, 38, 38, 0.1)', border: '1px solid rgba(220, 38, 38, 0.2)', borderRadius: '12px', padding: '12px', marginTop: '16px' }}>
+        <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+          ⚠️ Après envoi, contactez le support avec la preuve de transaction pour créditer votre compte.
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+// Shop Page
+const ShopPage = ({ categories, onCategoryClick }) => (
+  <div className="page-container animate-fade-in">
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '24px' }}>Boutique</h2>
+      
+      {categories && categories.length > 0 ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+          {categories.map(cat => (
+            <div key={cat.id} className="category-card" onClick={() => onCategoryClick(cat.id)} data-testid={`shop-category-${cat.id}`}>
+              <div className="category-icon">{cat.icon || '📁'}</div>
+              <div className="category-name">{cat.name}</div>
+              <div className="category-count">{cat.products_count || 0} produits</div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="empty-state">
+          <PackageIcon />
+          <p>Aucune catégorie disponible</p>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+// Category Products Page
+const CategoryPage = ({ category, products, onBack, onProductClick, onAddToCart }) => (
+  <div className="page-container animate-fade-in">
+    <div className="header" style={{ cursor: 'pointer' }} onClick={onBack}>
+      <BackIcon />
+      <div style={{ fontWeight: '600' }}>{category?.name || 'Catégorie'}</div>
+    </div>
+    
+    <div style={{ padding: '16px' }}>
+      {products && products.length > 0 ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+          {products.map(product => (
+            <div key={product.id} className="product-card" onClick={() => onProductClick(product)} data-testid={`product-${product.id}`}>
+              {product.images?.[0]?.url ? (
+                <img src={product.images[0].url} alt="" className="product-image" />
+              ) : (
+                <div className="product-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <PackageIcon />
+                </div>
+              )}
+              <div className="product-info">
+                <div className="product-title">{product.title}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+                  <div className="product-price">{formatPrice(product.price_cents)}</div>
+                  {product.stock > 0 ? (
+                    <span className="badge badge-success">En stock</span>
+                  ) : (
+                    <span className="badge badge-error">Épuisé</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="empty-state">
+          <PackageIcon />
+          <p>Aucun produit dans cette catégorie</p>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+// Product Detail Modal
+const ProductModal = ({ product, onClose, onAddToCart }) => {
+  if (!product) return null;
+  
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-handle" />
+        <div className="modal-header">
+          <h3 style={{ fontWeight: '600' }}>{product.title}</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-primary)' }}>
+            <CloseIcon />
+          </button>
         </div>
         
-        <div className="bg-patek-card border border-patek-border rounded-xl p-5">
-          <h3 className="text-lg font-semibold mb-4">Tickets support</h3>
-          <div className="space-y-3">
-            {['open', 'in_progress', 'resolved'].map(status => (
-              <div key={status} className="flex items-center justify-between">
-                <StatusBadge status={status} type="ticket" />
-                <span className="text-patek-text font-medium">{stats?.tickets?.[status] || 0}</span>
+        <div style={{ padding: '16px' }}>
+          {product.images?.[0]?.url && (
+            <img src={product.images[0].url} alt="" style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '12px', marginBottom: '16px' }} />
+          )}
+          
+          <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--accent)', marginBottom: '8px' }}>
+            {formatPrice(product.price_cents)}
+          </div>
+          
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+            {product.stock > 0 ? (
+              <span className="badge badge-success">✓ En stock ({product.stock})</span>
+            ) : (
+              <span className="badge badge-error">Épuisé</span>
+            )}
+            <span className="badge badge-info">SKU: {product.sku}</span>
+          </div>
+          
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px' }}>
+            {product.description}
+          </p>
+          
+          {product.stock > 0 && (
+            <button className="btn-primary" onClick={() => onAddToCart(product.id)} data-testid="add-to-cart-btn">
+              Ajouter au panier
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Cart Modal
+const CartModal = ({ cart, userBalance, onClose, onUpdateQuantity, onCheckout }) => {
+  const total = cart?.items?.reduce((sum, item) => sum + item.unit_price_cents * item.quantity, 0) || 0;
+  const canCheckout = total > 0 && userBalance >= total;
+  
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-handle" />
+        <div className="modal-header">
+          <h3 style={{ fontWeight: '600' }}>Mon Panier</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-primary)' }}>
+            <CloseIcon />
+          </button>
+        </div>
+        
+        <div style={{ padding: '16px' }}>
+          {cart?.items?.length > 0 ? (
+            <>
+              {cart.items.map(item => (
+                <div key={item.id} className="card" style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontWeight: '500' }}>{item.product_title}</div>
+                    <div style={{ color: 'var(--accent)', fontWeight: '600' }}>{formatPrice(item.unit_price_cents)}</div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <button onClick={() => onUpdateQuantity(item.id, item.quantity - 1)} style={{ background: 'var(--bg-secondary)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: 'var(--text-primary)' }}>
+                      <MinusIcon />
+                    </button>
+                    <span style={{ fontWeight: '600', minWidth: '24px', textAlign: 'center' }}>{item.quantity}</span>
+                    <button onClick={() => onUpdateQuantity(item.id, item.quantity + 1)} style={{ background: 'var(--bg-secondary)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: 'var(--text-primary)' }}>
+                      <PlusIcon />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              
+              <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px', marginTop: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Total</span>
+                  <span style={{ fontWeight: '700', fontSize: '18px', color: 'var(--accent)' }}>{formatPrice(total)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Votre solde</span>
+                  <span style={{ fontWeight: '500' }}>{formatPrice(userBalance)}</span>
+                </div>
+                
+                {!canCheckout && total > 0 && (
+                  <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '8px', padding: '12px', marginBottom: '16px', fontSize: '13px', color: 'var(--accent)' }}>
+                    Solde insuffisant. Rechargez votre compte.
+                  </div>
+                )}
+                
+                <button className="btn-primary" onClick={onCheckout} disabled={!canCheckout} style={{ opacity: canCheckout ? 1 : 0.5 }} data-testid="checkout-btn">
+                  Valider la commande
+                </button>
               </div>
-            ))}
-          </div>
+            </>
+          ) : (
+            <div className="empty-state">
+              <ShopIcon />
+              <p>Votre panier est vide</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-// Categories Component
-const Categories = () => {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null);
-  const [formData, setFormData] = useState({ slug: '', name: '', description: '', icon: '📁', position: 0 });
-  
-  const fetchCategories = useCallback(async () => {
-    try {
-      const { data } = await api.get('/api/admin/categories');
-      setCategories(data);
-    } catch (err) {
-      console.error('Error fetching categories:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-  
-  useEffect(() => { fetchCategories(); }, [fetchCategories]);
-  
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingCategory) {
-        await api.patch(`/api/admin/categories/${editingCategory.id}`, formData);
-      } else {
-        await api.post('/api/admin/categories', formData);
-      }
-      setShowModal(false);
-      setEditingCategory(null);
-      setFormData({ slug: '', name: '', description: '', icon: '📁', position: 0 });
-      fetchCategories();
-    } catch (err) {
-      console.error('Error saving category:', err);
-    }
-  };
-  
-  const handleDelete = async (id) => {
-    if (!window.confirm('Supprimer cette catégorie ?')) return;
-    try {
-      await api.delete(`/api/admin/categories/${id}`);
-      fetchCategories();
-    } catch (err) {
-      console.error('Error deleting category:', err);
-    }
-  };
-  
-  const openEdit = (cat) => {
-    setEditingCategory(cat);
-    setFormData({ slug: cat.slug, name: cat.name, description: cat.description || '', icon: cat.icon || '📁', position: cat.position || 0 });
-    setShowModal(true);
-  };
-  
-  return (
-    <div className="space-y-6" data-testid="categories-view">
-      <div className="flex items-center justify-between">
+// Support Page
+const SupportPage = ({ tickets, onNewTicket, onTicketClick }) => (
+  <div className="page-container animate-fade-in">
+    <div style={{ padding: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <div>
-          <h2 className="text-2xl font-display font-bold text-patek-text mb-1">Catégories</h2>
-          <p className="text-patek-muted">{categories.length} catégories</p>
+          <h2 style={{ fontSize: '20px', fontWeight: '600' }}>Support</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Nous sommes là pour vous aider</p>
         </div>
-        <button 
-          onClick={() => { setEditingCategory(null); setFormData({ slug: '', name: '', description: '', icon: '📁', position: 0 }); setShowModal(true); }}
-          className="flex items-center gap-2 px-4 py-2 bg-patek-accent text-black font-medium rounded-lg hover:bg-patek-accent-light transition-colors"
-          data-testid="add-category-btn"
-        >
-          <Plus className="w-4 h-4" /> Ajouter
-        </button>
       </div>
       
-      {loading ? (
-        <div className="flex justify-center py-12"><RefreshCw className="w-6 h-6 animate-spin text-patek-accent" /></div>
+      <button className="btn-primary" onClick={onNewTicket} style={{ marginBottom: '24px' }} data-testid="new-ticket-btn">
+        + Nouveau ticket
+      </button>
+      
+      {tickets && tickets.length > 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {tickets.map(ticket => (
+            <div key={ticket.id} className="ticket-item" onClick={() => onTicketClick(ticket)} data-testid={`ticket-${ticket.id}`}>
+              <div className="ticket-icon">
+                <SupportIcon />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: '500', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ticket.subject}</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{formatDate(ticket.created_at)}</div>
+              </div>
+              <span className={`badge ${ticket.status === 'open' ? 'badge-success' : ticket.status === 'resolved' ? 'badge-info' : 'badge-warning'}`}>
+                {ticket.status === 'open' ? 'Ouvert' : ticket.status === 'resolved' ? 'Résolu' : 'En cours'}
+              </span>
+              <ChevronRight />
+            </div>
+          ))}
+        </div>
       ) : (
-        <div className="bg-patek-card border border-patek-border rounded-xl overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-patek-darker">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Icône</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Nom</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Slug</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Statut</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-patek-muted uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-patek-border">
-              {categories.map(cat => (
-                <tr key={cat.id} className="hover:bg-patek-darker/50 transition-colors">
-                  <td className="px-4 py-3 text-2xl">{cat.icon || '📁'}</td>
-                  <td className="px-4 py-3 font-medium text-patek-text">{cat.name}</td>
-                  <td className="px-4 py-3 text-patek-muted">{cat.slug}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 text-xs rounded ${cat.is_active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                      {cat.is_active ? 'Actif' : 'Inactif'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => openEdit(cat)} className="p-1.5 hover:bg-patek-border rounded-lg transition-colors" data-testid={`edit-category-${cat.id}`}>
-                        <Pencil className="w-4 h-4 text-patek-muted" />
-                      </button>
-                      <button onClick={() => handleDelete(cat.id)} className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors" data-testid={`delete-category-${cat.id}`}>
-                        <Trash2 className="w-4 h-4 text-red-400" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="empty-state">
+          <SupportIcon />
+          <p>Aucun ticket</p>
         </div>
       )}
-      
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingCategory ? 'Modifier la catégorie' : 'Nouvelle catégorie'}>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-patek-muted mb-1">Nom</label>
-            <input 
-              type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
-              className="w-full px-3 py-2 bg-patek-darker border border-patek-border rounded-lg text-patek-text focus:border-patek-accent focus:outline-none"
-              required data-testid="category-name-input"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-patek-muted mb-1">Slug</label>
-            <input 
-              type="text" value={formData.slug} onChange={e => setFormData({...formData, slug: e.target.value})}
-              className="w-full px-3 py-2 bg-patek-darker border border-patek-border rounded-lg text-patek-text focus:border-patek-accent focus:outline-none"
-              required data-testid="category-slug-input"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-patek-muted mb-1">Icône (emoji)</label>
-            <input 
-              type="text" value={formData.icon} onChange={e => setFormData({...formData, icon: e.target.value})}
-              className="w-full px-3 py-2 bg-patek-darker border border-patek-border rounded-lg text-patek-text focus:border-patek-accent focus:outline-none"
-              data-testid="category-icon-input"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-patek-muted mb-1">Description</label>
-            <textarea 
-              value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
-              className="w-full px-3 py-2 bg-patek-darker border border-patek-border rounded-lg text-patek-text focus:border-patek-accent focus:outline-none"
-              rows={3} data-testid="category-description-input"
-            />
-          </div>
-          <div className="flex justify-end gap-3 pt-4">
-            <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-patek-muted hover:text-patek-text transition-colors">
-              Annuler
-            </button>
-            <button type="submit" className="px-4 py-2 bg-patek-accent text-black font-medium rounded-lg hover:bg-patek-accent-light transition-colors" data-testid="save-category-btn">
-              {editingCategory ? 'Enregistrer' : 'Créer'}
-            </button>
-          </div>
-        </form>
-      </Modal>
     </div>
-  );
-};
+  </div>
+);
 
-// Products Component
-const Products = () => {
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [formData, setFormData] = useState({ category_id: '', sku: '', title: '', description: '', price_cents: 0, stock: 0, image_urls: [] });
+// New Ticket Modal
+const NewTicketModal = ({ onClose, onSubmit }) => {
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
   
-  const fetchData = useCallback(async () => {
-    try {
-      const [prodRes, catRes] = await Promise.all([
-        api.get('/api/admin/products'),
-        api.get('/api/admin/categories')
-      ]);
-      setProducts(prodRes.data);
-      setCategories(catRes.data);
-    } catch (err) {
-      console.error('Error fetching data:', err);
-    } finally {
-      setLoading(false);
+  const handleSubmit = () => {
+    if (subject.trim() && message.trim()) {
+      onSubmit(subject, message);
     }
-  }, []);
-  
-  useEffect(() => { fetchData(); }, [fetchData]);
-  
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingProduct) {
-        await api.patch(`/api/admin/products/${editingProduct.id}`, formData);
-      } else {
-        await api.post('/api/admin/products', formData);
-      }
-      setShowModal(false);
-      setEditingProduct(null);
-      fetchData();
-    } catch (err) {
-      console.error('Error saving product:', err);
-    }
-  };
-  
-  const handleDelete = async (id) => {
-    if (!window.confirm('Supprimer ce produit ?')) return;
-    try {
-      await api.delete(`/api/admin/products/${id}`);
-      fetchData();
-    } catch (err) {
-      console.error('Error deleting product:', err);
-    }
-  };
-  
-  const openEdit = (prod) => {
-    setEditingProduct(prod);
-    setFormData({
-      category_id: prod.category_id,
-      sku: prod.sku,
-      title: prod.title,
-      description: prod.description,
-      price_cents: prod.price_cents,
-      stock: prod.stock,
-      image_urls: prod.images?.map(i => i.url) || []
-    });
-    setShowModal(true);
-  };
-  
-  const openCreate = () => {
-    setEditingProduct(null);
-    setFormData({ category_id: categories[0]?.id || '', sku: '', title: '', description: '', price_cents: 0, stock: 0, image_urls: [] });
-    setShowModal(true);
   };
   
   return (
-    <div className="space-y-6" data-testid="products-view">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-display font-bold text-patek-text mb-1">Produits</h2>
-          <p className="text-patek-muted">{products.length} produits</p>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-handle" />
+        <div className="modal-header">
+          <h3 style={{ fontWeight: '600' }}>Nouveau ticket</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-primary)' }}>
+            <CloseIcon />
+          </button>
         </div>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-patek-accent text-black font-medium rounded-lg hover:bg-patek-accent-light transition-colors" data-testid="add-product-btn">
-          <Plus className="w-4 h-4" /> Ajouter
-        </button>
-      </div>
-      
-      {loading ? (
-        <div className="flex justify-center py-12"><RefreshCw className="w-6 h-6 animate-spin text-patek-accent" /></div>
-      ) : (
-        <div className="bg-patek-card border border-patek-border rounded-xl overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-patek-darker">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Produit</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">SKU</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Prix</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Stock</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Statut</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-patek-muted uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-patek-border">
-              {products.map(prod => (
-                <tr key={prod.id} className="hover:bg-patek-darker/50 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      {prod.images?.[0]?.url ? (
-                        <img src={prod.images[0].url} alt="" className="w-10 h-10 object-cover rounded-lg" />
-                      ) : (
-                        <div className="w-10 h-10 bg-patek-darker rounded-lg flex items-center justify-center">
-                          <Package className="w-5 h-5 text-patek-muted" />
-                        </div>
-                      )}
-                      <span className="font-medium text-patek-text">{prod.title}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-patek-muted font-mono text-sm">{prod.sku}</td>
-                  <td className="px-4 py-3 text-patek-accent font-medium">{formatPrice(prod.price_cents)}</td>
-                  <td className="px-4 py-3">
-                    <span className={`font-medium ${prod.stock > 10 ? 'text-green-400' : prod.stock > 0 ? 'text-yellow-400' : 'text-red-400'}`}>
-                      {prod.stock}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 text-xs rounded ${prod.is_active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                      {prod.is_active ? 'Actif' : 'Inactif'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => openEdit(prod)} className="p-1.5 hover:bg-patek-border rounded-lg transition-colors" data-testid={`edit-product-${prod.id}`}>
-                        <Pencil className="w-4 h-4 text-patek-muted" />
-                      </button>
-                      <button onClick={() => handleDelete(prod.id)} className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors" data-testid={`delete-product-${prod.id}`}>
-                        <Trash2 className="w-4 h-4 text-red-400" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingProduct ? 'Modifier le produit' : 'Nouveau produit'}>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-patek-muted mb-1">Catégorie</label>
-            <select 
-              value={formData.category_id} onChange={e => setFormData({...formData, category_id: e.target.value})}
-              className="w-full px-3 py-2 bg-patek-darker border border-patek-border rounded-lg text-patek-text focus:border-patek-accent focus:outline-none"
-              required data-testid="product-category-select"
-            >
-              <option value="">Sélectionner...</option>
-              {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-            </select>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-patek-muted mb-1">SKU</label>
-              <input 
-                type="text" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})}
-                className="w-full px-3 py-2 bg-patek-darker border border-patek-border rounded-lg text-patek-text focus:border-patek-accent focus:outline-none"
-                required data-testid="product-sku-input"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-patek-muted mb-1">Titre</label>
-              <input 
-                type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})}
-                className="w-full px-3 py-2 bg-patek-darker border border-patek-border rounded-lg text-patek-text focus:border-patek-accent focus:outline-none"
-                required data-testid="product-title-input"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-patek-muted mb-1">Description</label>
-            <textarea 
-              value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
-              className="w-full px-3 py-2 bg-patek-darker border border-patek-border rounded-lg text-patek-text focus:border-patek-accent focus:outline-none"
-              rows={3} required data-testid="product-description-input"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-patek-muted mb-1">Prix (centimes)</label>
-              <input 
-                type="number" value={formData.price_cents} onChange={e => setFormData({...formData, price_cents: parseInt(e.target.value) || 0})}
-                className="w-full px-3 py-2 bg-patek-darker border border-patek-border rounded-lg text-patek-text focus:border-patek-accent focus:outline-none"
-                required min="0" data-testid="product-price-input"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-patek-muted mb-1">Stock</label>
-              <input 
-                type="number" value={formData.stock} onChange={e => setFormData({...formData, stock: parseInt(e.target.value) || 0})}
-                className="w-full px-3 py-2 bg-patek-darker border border-patek-border rounded-lg text-patek-text focus:border-patek-accent focus:outline-none"
-                required min="0" data-testid="product-stock-input"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-patek-muted mb-1">URL Image (optionnel)</label>
-            <input 
-              type="url" 
-              value={formData.image_urls?.[0] || ''} 
-              onChange={e => setFormData({...formData, image_urls: e.target.value ? [e.target.value] : []})}
-              className="w-full px-3 py-2 bg-patek-darker border border-patek-border rounded-lg text-patek-text focus:border-patek-accent focus:outline-none"
-              placeholder="https://..." data-testid="product-image-input"
-            />
-          </div>
-          <div className="flex justify-end gap-3 pt-4">
-            <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-patek-muted hover:text-patek-text transition-colors">
-              Annuler
-            </button>
-            <button type="submit" className="px-4 py-2 bg-patek-accent text-black font-medium rounded-lg hover:bg-patek-accent-light transition-colors" data-testid="save-product-btn">
-              {editingProduct ? 'Enregistrer' : 'Créer'}
-            </button>
-          </div>
-        </form>
-      </Modal>
-    </div>
-  );
-};
-
-// Orders Component
-const Orders = () => {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  const fetchOrders = useCallback(async () => {
-    try {
-      const { data } = await api.get('/api/admin/orders');
-      setOrders(data);
-    } catch (err) {
-      console.error('Error fetching orders:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-  
-  useEffect(() => { fetchOrders(); }, [fetchOrders]);
-  
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) { fetchOrders(); return; }
-    try {
-      const { data } = await api.get(`/api/admin/orders/search/${searchQuery}`);
-      if (data) setOrders([data]);
-      else setOrders([]);
-    } catch (err) {
-      setOrders([]);
-    }
-  };
-  
-  const updateStatus = async (orderId, status) => {
-    try {
-      await api.patch(`/api/admin/orders/${orderId}/status`, { status });
-      fetchOrders();
-      if (selectedOrder?.id === orderId) {
-        setSelectedOrder({ ...selectedOrder, status });
-      }
-    } catch (err) {
-      console.error('Error updating status:', err);
-    }
-  };
-  
-  const statusOptions = ['pending', 'paid', 'preparing', 'shipped', 'completed', 'canceled'];
-  
-  return (
-    <div className="space-y-6" data-testid="orders-view">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-display font-bold text-patek-text mb-1">Commandes</h2>
-          <p className="text-patek-muted">{orders.length} commandes</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-patek-muted" />
+        
+        <div style={{ padding: '16px' }}>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>Sujet</label>
             <input 
               type="text" 
-              value={searchQuery} 
-              onChange={e => setSearchQuery(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSearch()}
-              placeholder="N° commande..."
-              className="pl-10 pr-4 py-2 bg-patek-darker border border-patek-border rounded-lg text-patek-text focus:border-patek-accent focus:outline-none w-48"
-              data-testid="search-order-input"
+              value={subject} 
+              onChange={e => setSubject(e.target.value)} 
+              placeholder="Ex: Problème de paiement"
+              data-testid="ticket-subject-input"
             />
           </div>
-          <button onClick={handleSearch} className="p-2 bg-patek-accent text-black rounded-lg hover:bg-patek-accent-light transition-colors" data-testid="search-order-btn">
-            <Search className="w-4 h-4" />
-          </button>
-          <button onClick={fetchOrders} className="p-2 bg-patek-darker border border-patek-border rounded-lg hover:bg-patek-border transition-colors" data-testid="refresh-orders-btn">
-            <RefreshCw className="w-4 h-4" />
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '8px' }}>Message</label>
+            <textarea 
+              value={message} 
+              onChange={e => setMessage(e.target.value)} 
+              placeholder="Décrivez votre problème..."
+              rows={4}
+              data-testid="ticket-message-input"
+            />
+          </div>
+          <button className="btn-primary" onClick={handleSubmit} data-testid="submit-ticket-btn">
+            Envoyer
           </button>
         </div>
       </div>
-      
-      {loading ? (
-        <div className="flex justify-center py-12"><RefreshCw className="w-6 h-6 animate-spin text-patek-accent" /></div>
-      ) : (
-        <div className="bg-patek-card border border-patek-border rounded-xl overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-patek-darker">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">N° Commande</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Total</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Statut</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-patek-muted uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-patek-border">
-              {orders.map(order => (
-                <tr key={order.id} className="hover:bg-patek-darker/50 transition-colors">
-                  <td className="px-4 py-3 font-mono text-sm text-patek-accent">{order.order_number}</td>
-                  <td className="px-4 py-3 text-patek-muted text-sm">{formatDate(order.created_at)}</td>
-                  <td className="px-4 py-3 text-patek-text font-medium">{formatPrice(order.total_cents)}</td>
-                  <td className="px-4 py-3"><StatusBadge status={order.status} /></td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => setSelectedOrder(order)} className="p-1.5 hover:bg-patek-border rounded-lg transition-colors" data-testid={`view-order-${order.id}`}>
-                        <Eye className="w-4 h-4 text-patek-muted" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      
-      <Modal isOpen={!!selectedOrder} onClose={() => setSelectedOrder(null)} title={`Commande ${selectedOrder?.order_number}`}>
-        {selectedOrder && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm text-patek-muted">Date</label>
-                <p className="text-patek-text">{formatDate(selectedOrder.created_at)}</p>
-              </div>
-              <div>
-                <label className="text-sm text-patek-muted">Total</label>
-                <p className="text-patek-accent font-bold">{formatPrice(selectedOrder.total_cents)}</p>
-              </div>
-            </div>
-            
-            <div>
-              <label className="text-sm text-patek-muted block mb-2">Statut</label>
-              <select 
-                value={selectedOrder.status}
-                onChange={e => updateStatus(selectedOrder.id, e.target.value)}
-                className="w-full px-3 py-2 bg-patek-darker border border-patek-border rounded-lg text-patek-text focus:border-patek-accent focus:outline-none"
-                data-testid="order-status-select"
-              >
-                {statusOptions.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-            
-            <div>
-              <label className="text-sm text-patek-muted block mb-2">Articles</label>
-              <div className="space-y-2">
-                {selectedOrder.items?.map(item => (
-                  <div key={item.id} className="flex justify-between items-center p-2 bg-patek-darker rounded-lg">
-                    <span className="text-patek-text">{item.title} x{item.quantity}</span>
-                    <span className="text-patek-accent">{formatPrice(item.total_price_cents)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 };
 
-// Users Component
-const UsersView = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  
-  const fetchUsers = useCallback(async () => {
-    try {
-      const { data } = await api.get('/api/admin/users');
-      setUsers(data);
-    } catch (err) {
-      console.error('Error fetching users:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-  
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
-  
-  const updateRole = async (userId, role) => {
-    try {
-      await api.patch(`/api/admin/users/${userId}/role`, { role });
-      fetchUsers();
-    } catch (err) {
-      console.error('Error updating role:', err);
-    }
-  };
-  
-  const roleColors = {
-    admin: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-    staff: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    client: 'bg-gray-500/20 text-gray-400 border-gray-500/30'
-  };
-  
-  return (
-    <div className="space-y-6" data-testid="users-view">
-      <div>
-        <h2 className="text-2xl font-display font-bold text-patek-text mb-1">Utilisateurs</h2>
-        <p className="text-patek-muted">{users.length} utilisateurs</p>
+// Settings Page
+const SettingsPage = ({ user, orders }) => (
+  <div className="page-container animate-fade-in">
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '24px' }}>Réglages</h2>
+      
+      {/* Profile */}
+      <div className="card" style={{ marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+            {user?.first_name?.[0] || '👤'}
+          </div>
+          <div>
+            <div style={{ fontWeight: '600' }}>{user?.first_name} {user?.last_name || ''}</div>
+            <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>@{user?.username || 'N/A'}</div>
+          </div>
+        </div>
       </div>
       
-      {loading ? (
-        <div className="flex justify-center py-12"><RefreshCw className="w-6 h-6 animate-spin text-patek-accent" /></div>
-      ) : (
-        <div className="bg-patek-card border border-patek-border rounded-xl overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-patek-darker">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Utilisateur</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Telegram ID</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Rôle</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Inscrit</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-patek-border">
-              {users.map(user => (
-                <tr key={user.id} className="hover:bg-patek-darker/50 transition-colors">
-                  <td className="px-4 py-3">
-                    <div>
-                      <div className="font-medium text-patek-text">{user.first_name} {user.last_name || ''}</div>
-                      <div className="text-sm text-patek-muted">@{user.username || 'N/A'}</div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 font-mono text-sm text-patek-muted">{user.telegram_id}</td>
-                  <td className="px-4 py-3">
-                    <select 
-                      value={user.role}
-                      onChange={e => updateRole(user.id, e.target.value)}
-                      className={`px-2 py-1 text-xs font-medium rounded border bg-transparent ${roleColors[user.role] || roleColors.client}`}
-                      data-testid={`user-role-${user.id}`}
-                    >
-                      <option value="client">client</option>
-                      <option value="staff">staff</option>
-                      <option value="admin">admin</option>
-                    </select>
-                  </td>
-                  <td className="px-4 py-3 text-patek-muted text-sm">{formatDate(user.created_at)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Balance */}
+      <div className="card" style={{ marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ color: 'var(--text-secondary)' }}>Solde</span>
+          <span style={{ fontWeight: '700', color: 'var(--accent)', fontSize: '18px' }}>{formatPrice(user?.balance_cents || 0)}</span>
         </div>
-      )}
-    </div>
-  );
-};
-
-// Tickets Component
-const Tickets = () => {
-  const [tickets, setTickets] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedTicket, setSelectedTicket] = useState(null);
-  
-  const fetchTickets = useCallback(async () => {
-    try {
-      const { data } = await api.get('/api/admin/tickets');
-      setTickets(data);
-    } catch (err) {
-      console.error('Error fetching tickets:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-  
-  useEffect(() => { fetchTickets(); }, [fetchTickets]);
-  
-  const updateStatus = async (ticketId, status) => {
-    try {
-      await api.patch(`/api/admin/tickets/${ticketId}/status?status=${status}`);
-      fetchTickets();
-    } catch (err) {
-      console.error('Error updating status:', err);
-    }
-  };
-  
-  return (
-    <div className="space-y-6" data-testid="tickets-view">
-      <div>
-        <h2 className="text-2xl font-display font-bold text-patek-text mb-1">Tickets Support</h2>
-        <p className="text-patek-muted">{tickets.length} tickets</p>
       </div>
       
-      {loading ? (
-        <div className="flex justify-center py-12"><RefreshCw className="w-6 h-6 animate-spin text-patek-accent" /></div>
-      ) : (
-        <div className="bg-patek-card border border-patek-border rounded-xl overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-patek-darker">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Sujet</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-patek-muted uppercase">Statut</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-patek-muted uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-patek-border">
-              {tickets.map(ticket => (
-                <tr key={ticket.id} className="hover:bg-patek-darker/50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-patek-text">{ticket.subject}</td>
-                  <td className="px-4 py-3 text-patek-muted text-sm">{formatDate(ticket.created_at)}</td>
-                  <td className="px-4 py-3"><StatusBadge status={ticket.status} type="ticket" /></td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => setSelectedTicket(ticket)} className="p-1.5 hover:bg-patek-border rounded-lg transition-colors" data-testid={`view-ticket-${ticket.id}`}>
-                        <Eye className="w-4 h-4 text-patek-muted" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      
-      <Modal isOpen={!!selectedTicket} onClose={() => setSelectedTicket(null)} title={selectedTicket?.subject}>
-        {selectedTicket && (
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm text-patek-muted block mb-2">Statut</label>
-              <select 
-                value={selectedTicket.status}
-                onChange={e => { updateStatus(selectedTicket.id, e.target.value); setSelectedTicket({...selectedTicket, status: e.target.value}); }}
-                className="w-full px-3 py-2 bg-patek-darker border border-patek-border rounded-lg text-patek-text focus:border-patek-accent focus:outline-none"
-                data-testid="ticket-status-select"
-              >
-                <option value="open">open</option>
-                <option value="in_progress">in_progress</option>
-                <option value="resolved">resolved</option>
-                <option value="closed">closed</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="text-sm text-patek-muted block mb-2">Messages</label>
-              <div className="space-y-2 max-h-60 overflow-auto">
-                {selectedTicket.messages?.map((msg, idx) => (
-                  <div key={idx} className={`p-3 rounded-lg ${msg.from === 'user' ? 'bg-patek-darker' : 'bg-patek-accent/10 border border-patek-accent/20'}`}>
-                    <div className="flex justify-between text-xs text-patek-muted mb-1">
-                      <span>{msg.from === 'user' ? 'Client' : 'Staff'}</span>
-                      <span>{msg.at}</span>
-                    </div>
-                    <p className="text-patek-text text-sm">{msg.text}</p>
-                  </div>
-                ))}
+      {/* Orders */}
+      <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', marginTop: '24px' }}>Mes commandes</h3>
+      {orders && orders.length > 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {orders.map(order => (
+            <div key={order.id} className="card" data-testid={`order-${order.id}`}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontFamily: 'monospace', fontSize: '13px', color: 'var(--text-muted)' }}>{order.order_number}</span>
+                <span className={`badge ${order.status === 'completed' ? 'badge-success' : order.status === 'paid' ? 'badge-info' : order.status === 'canceled' ? 'badge-error' : 'badge-warning'}`}>
+                  {order.status}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>{formatDate(order.created_at)}</span>
+                <span style={{ fontWeight: '600', color: 'var(--accent)' }}>{formatPrice(order.total_cents)}</span>
               </div>
             </div>
-          </div>
-        )}
-      </Modal>
+          ))}
+        </div>
+      ) : (
+        <div className="empty-state" style={{ padding: '24px' }}>
+          <p>Aucune commande</p>
+        </div>
+      )}
     </div>
-  );
-};
+  </div>
+);
 
 // Main App
 function App() {
-  const [currentView, setCurrentView] = useState('dashboard');
-  const [stats, setStats] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [currentView, setCurrentView] = useState('home');
+  const [user, setUser] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [productsCount, setProductsCount] = useState(0);
+  const [depositInfo, setDepositInfo] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [categoryProducts, setCategoryProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [cart, setCart] = useState(null);
+  const [showCart, setShowCart] = useState(false);
+  const [tickets, setTickets] = useState([]);
+  const [showNewTicket, setShowNewTicket] = useState(false);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+  const [toast, setToast] = useState(null);
+
+  const api = createApi();
+
+  // Initialize Telegram WebApp
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const { data } = await api.get('/api/admin/stats');
-        setStats(data);
-      } catch (err) {
-        console.error('Error fetching stats:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStats();
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      tg.setHeaderColor('#0d0d12');
+      tg.setBackgroundColor('#0d0d12');
+    }
   }, []);
-  
-  const seedData = async () => {
-    if (!window.confirm('Créer les données de démonstration ?')) return;
+
+  // Show toast
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  // Copy to clipboard
+  const copyToClipboard = async (text) => {
     try {
-      await api.post('/api/admin/seed');
-      window.location.reload();
+      await navigator.clipboard.writeText(text);
+      showToast('Copié !');
+    } catch {
+      showToast('Erreur de copie', 'error');
+    }
+  };
+
+  // Fetch home data
+  const fetchHomeData = useCallback(async () => {
+    try {
+      const { data } = await api.get('/api/webapp/home');
+      setUser(data.user);
+      setCategories(data.categories);
+      setProductsCount(data.products_count);
     } catch (err) {
-      console.error('Error seeding:', err);
+      console.error('Error fetching home:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch deposit info
+  const fetchDepositInfo = useCallback(async () => {
+    try {
+      const { data } = await api.get('/api/webapp/deposit');
+      setDepositInfo(data);
+    } catch (err) {
+      console.error('Error fetching deposit:', err);
+    }
+  }, []);
+
+  // Fetch shop categories
+  const fetchShopCategories = useCallback(async () => {
+    try {
+      const { data } = await api.get('/api/webapp/categories');
+      setCategories(data);
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+    }
+  }, []);
+
+  // Fetch category products
+  const fetchCategoryProducts = useCallback(async (catId) => {
+    try {
+      const { data } = await api.get(`/api/webapp/categories/${catId}/products`);
+      setSelectedCategory(data.category);
+      setCategoryProducts(data.products);
+    } catch (err) {
+      console.error('Error fetching products:', err);
+    }
+  }, []);
+
+  // Fetch cart
+  const fetchCart = useCallback(async () => {
+    try {
+      const { data } = await api.get('/api/webapp/cart');
+      setCart(data.cart);
+    } catch (err) {
+      console.error('Error fetching cart:', err);
+    }
+  }, []);
+
+  // Fetch tickets
+  const fetchTickets = useCallback(async () => {
+    try {
+      const { data } = await api.get('/api/webapp/tickets');
+      setTickets(data);
+    } catch (err) {
+      console.error('Error fetching tickets:', err);
+    }
+  }, []);
+
+  // Fetch orders
+  const fetchOrders = useCallback(async () => {
+    try {
+      const { data } = await api.get('/api/webapp/orders');
+      setOrders(data);
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+    }
+  }, []);
+
+  // Initial load
+  useEffect(() => {
+    fetchHomeData();
+    fetchCart();
+  }, [fetchHomeData, fetchCart]);
+
+  // Load data based on view
+  useEffect(() => {
+    if (currentView === 'deposit') fetchDepositInfo();
+    if (currentView === 'shop') fetchShopCategories();
+    if (currentView === 'support') fetchTickets();
+    if (currentView === 'settings') fetchOrders();
+  }, [currentView, fetchDepositInfo, fetchShopCategories, fetchTickets, fetchOrders]);
+
+  // Handle category click
+  const handleCategoryClick = (catId) => {
+    fetchCategoryProducts(catId);
+    setCurrentView('category');
+  };
+
+  // Add to cart
+  const handleAddToCart = async (productId) => {
+    try {
+      await api.post(`/api/webapp/cart/add?product_id=${productId}&quantity=1`);
+      await fetchCart();
+      setSelectedProduct(null);
+      showToast('Ajouté au panier');
+    } catch (err) {
+      showToast(err.response?.data?.detail || 'Erreur', 'error');
     }
   };
-  
-  const navItems = [
-    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { id: 'categories', icon: Package, label: 'Catégories' },
-    { id: 'products', icon: ShoppingCart, label: 'Produits' },
-    { id: 'orders', icon: Truck, label: 'Commandes' },
-    { id: 'users', icon: Users, label: 'Utilisateurs' },
-    { id: 'tickets', icon: MessageSquare, label: 'Support' },
-  ];
-  
-  const renderView = () => {
-    switch (currentView) {
-      case 'dashboard': return <Dashboard stats={stats} />;
-      case 'categories': return <Categories />;
-      case 'products': return <Products />;
-      case 'orders': return <Orders />;
-      case 'users': return <UsersView />;
-      case 'tickets': return <Tickets />;
-      default: return <Dashboard stats={stats} />;
+
+  // Update cart quantity
+  const handleUpdateQuantity = async (itemId, quantity) => {
+    try {
+      await api.post(`/api/webapp/cart/update?item_id=${itemId}&quantity=${quantity}`);
+      await fetchCart();
+    } catch (err) {
+      showToast('Erreur de mise à jour', 'error');
     }
   };
-  
+
+  // Checkout
+  const handleCheckout = async () => {
+    try {
+      await api.post('/api/webapp/checkout');
+      await fetchCart();
+      await fetchHomeData();
+      setShowCart(false);
+      showToast('Commande validée !');
+    } catch (err) {
+      showToast(err.response?.data?.detail || 'Erreur de paiement', 'error');
+    }
+  };
+
+  // Create ticket
+  const handleCreateTicket = async (subject, message) => {
+    try {
+      await api.post(`/api/webapp/tickets?subject=${encodeURIComponent(subject)}&message=${encodeURIComponent(message)}`);
+      await fetchTickets();
+      setShowNewTicket(false);
+      showToast('Ticket créé');
+    } catch (err) {
+      showToast('Erreur', 'error');
+    }
+  };
+
+  const cartCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-patek-dark flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 animate-spin text-patek-accent" />
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="animate-pulse" style={{ color: 'var(--accent)', fontSize: '24px' }}>Chargement...</div>
       </div>
     );
   }
-  
+
   return (
-    <div className="min-h-screen bg-patek-dark flex" data-testid="admin-panel">
-      {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-patek-darker border-r border-patek-border transition-all duration-300 flex flex-col`}>
-        <div className="p-4 border-b border-patek-border">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-patek-accent to-amber-600 rounded-xl flex items-center justify-center text-black font-bold">
-              P
-            </div>
-            {sidebarOpen && (
-              <div>
-                <h1 className="font-display font-bold text-patek-text">Patek Shop</h1>
-                <p className="text-xs text-patek-muted">Admin Panel</p>
-              </div>
-            )}
-          </div>
+    <div style={{ height: '100%' }} data-testid="mini-app">
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: toast.type === 'error' ? 'var(--accent)' : 'var(--success)',
+          color: 'white',
+          padding: '12px 24px',
+          borderRadius: '12px',
+          zIndex: 1000,
+          fontWeight: '500',
+          animation: 'fadeIn 0.2s ease-out'
+        }}>
+          {toast.message}
         </div>
-        
-        <nav className="flex-1 p-3 space-y-1">
-          {navItems.map(item => (
-            <button
-              key={item.id}
-              onClick={() => setCurrentView(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
-                currentView === item.id 
-                  ? 'bg-patek-accent/10 text-patek-accent border border-patek-accent/20' 
-                  : 'text-patek-muted hover:bg-patek-border hover:text-patek-text'
-              }`}
-              data-testid={`nav-${item.id}`}
-            >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
-              {sidebarOpen && <span className="font-medium">{item.label}</span>}
-            </button>
-          ))}
-        </nav>
-        
-        <div className="p-3 border-t border-patek-border space-y-1">
-          <button 
-            onClick={seedData}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-patek-muted hover:bg-patek-border hover:text-patek-text transition-all"
-            data-testid="seed-data-btn"
-          >
-            <Settings className="w-5 h-5 flex-shrink-0" />
-            {sidebarOpen && <span className="font-medium">Seed Data</span>}
-          </button>
-          <button 
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-patek-muted hover:bg-patek-border hover:text-patek-text transition-all"
-          >
-            <Menu className="w-5 h-5 flex-shrink-0" />
-            {sidebarOpen && <span className="font-medium">Réduire</span>}
-          </button>
-        </div>
-      </aside>
-      
+      )}
+
       {/* Main content */}
-      <main className="flex-1 p-6 overflow-auto">
-        {renderView()}
-      </main>
+      {currentView === 'home' && (
+        <HomePage 
+          user={user} 
+          categories={categories} 
+          productsCount={productsCount}
+          onCategoryClick={handleCategoryClick}
+          setCurrentView={setCurrentView}
+        />
+      )}
+      {currentView === 'deposit' && (
+        <DepositPage depositInfo={depositInfo} onCopy={copyToClipboard} />
+      )}
+      {currentView === 'shop' && (
+        <ShopPage categories={categories} onCategoryClick={handleCategoryClick} />
+      )}
+      {currentView === 'category' && (
+        <CategoryPage 
+          category={selectedCategory}
+          products={categoryProducts}
+          onBack={() => setCurrentView('shop')}
+          onProductClick={setSelectedProduct}
+          onAddToCart={handleAddToCart}
+        />
+      )}
+      {currentView === 'support' && (
+        <SupportPage 
+          tickets={tickets}
+          onNewTicket={() => setShowNewTicket(true)}
+          onTicketClick={(ticket) => console.log('Ticket:', ticket)}
+        />
+      )}
+      {currentView === 'settings' && (
+        <SettingsPage user={user} orders={orders} />
+      )}
+
+      {/* Modals */}
+      {selectedProduct && (
+        <ProductModal 
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onAddToCart={handleAddToCart}
+        />
+      )}
+      {showCart && (
+        <CartModal 
+          cart={cart}
+          userBalance={user?.balance_cents || 0}
+          onClose={() => setShowCart(false)}
+          onUpdateQuantity={handleUpdateQuantity}
+          onCheckout={handleCheckout}
+        />
+      )}
+      {showNewTicket && (
+        <NewTicketModal 
+          onClose={() => setShowNewTicket(false)}
+          onSubmit={handleCreateTicket}
+        />
+      )}
+
+      {/* Floating cart button */}
+      {cartCount > 0 && currentView !== 'settings' && (
+        <button
+          onClick={() => setShowCart(true)}
+          style={{
+            position: 'fixed',
+            bottom: '90px',
+            right: '16px',
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            background: 'var(--accent)',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(220, 38, 38, 0.4)',
+            zIndex: 50
+          }}
+          data-testid="cart-fab"
+        >
+          <ShopIcon />
+          <span style={{
+            position: 'absolute',
+            top: '-4px',
+            right: '-4px',
+            background: 'white',
+            color: 'var(--accent)',
+            fontSize: '12px',
+            fontWeight: '700',
+            padding: '2px 8px',
+            borderRadius: '12px'
+          }}>{cartCount}</span>
+        </button>
+      )}
+
+      {/* Bottom Navigation */}
+      <BottomNav 
+        currentView={currentView} 
+        setCurrentView={(view) => {
+          if (view !== 'category') setCurrentView(view);
+        }}
+        cartCount={cartCount}
+      />
     </div>
   );
 }
